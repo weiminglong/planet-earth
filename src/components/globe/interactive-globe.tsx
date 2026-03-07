@@ -1,18 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Sphere, Stars } from "@react-three/drei";
+import { OrbitControls, Sphere, Stars, useTexture } from "@react-three/drei";
 import {
   DoubleSide,
   Group,
   MathUtils,
   Quaternion,
   Vector3,
+  Vector2,
 } from "three";
 import type { FloraPreview } from "@/lib/flora-data";
-import { createCloudTexture, createGlobeTexture } from "@/lib/globe-geography";
+import { createCloudTexture } from "@/lib/globe-geography";
 import { getFloraPalette } from "@/lib/visual-theme";
 import { useExploreStore } from "@/store/explore-store";
 
@@ -24,6 +25,9 @@ const UP_VECTOR = new Vector3(0, 1, 0);
 type InteractiveGlobeProps = {
   flora: FloraPreview[];
 };
+
+useTexture.preload("/textures/earth_daymap.jpg");
+useTexture.preload("/textures/earth_normal.jpg");
 
 export function InteractiveGlobe({ flora }: InteractiveGlobeProps) {
   const [isWebGlAvailable] = useState<boolean>(() => detectWebGlSupport());
@@ -41,9 +45,41 @@ export function InteractiveGlobe({ flora }: InteractiveGlobeProps) {
         gl={{ antialias: true, alpha: true }}
         onPointerMissed={() => setSelectedSlug(null)}
       >
-        <Scene flora={flora} />
+        <SceneChrome />
+        <Suspense fallback={<SceneFallback />}>
+          <Scene flora={flora} />
+        </Suspense>
       </Canvas>
     </div>
+  );
+}
+
+function SceneChrome() {
+  return (
+    <>
+      <color attach="background" args={["#02040a"]} />
+      <fog attach="fog" args={["#02040a", 9, 18]} />
+      <ambientLight intensity={0.9} />
+      <directionalLight position={[6, 4, 5]} intensity={2.6} color="#dbeafe" />
+      <directionalLight position={[-4, -2, 3]} intensity={1.4} color="#67e8f9" />
+      <pointLight position={[-6, -1, -4]} intensity={12} color="#22d3ee" />
+      <pointLight position={[2, 4, -5]} intensity={10} color="#818cf8" />
+      <hemisphereLight args={["#d7f9ff", "#08111d", 1.15]} />
+      <Stars radius={80} depth={30} count={4200} factor={4} saturation={0} fade speed={0.35} />
+    </>
+  );
+}
+
+function SceneFallback() {
+  return (
+    <group position={[-0.45, 0.02, 0]}>
+      <Sphere args={[SURFACE_RADIUS, 96, 96]}>
+        <meshPhongMaterial color="#14324a" shininess={16} specular="#67e8f9" />
+      </Sphere>
+      <Sphere args={[SURFACE_RADIUS + 0.018, 64, 64]}>
+        <meshBasicMaterial color="#bfe7ff" transparent opacity={0.05} side={DoubleSide} />
+      </Sphere>
+    </group>
   );
 }
 
@@ -55,7 +91,10 @@ function Scene({ flora }: InteractiveGlobeProps) {
   const globeRef = useRef<Group>(null);
   const cloudRef = useRef<Group>(null);
   const idleRotation = useRef(-0.8);
-  const globeTexture = useMemo(() => createGlobeTexture(), []);
+  const [dayTexture, normalTexture] = useTexture([
+    "/textures/earth_daymap.jpg",
+    "/textures/earth_normal.jpg",
+  ]);
   const cloudTexture = useMemo(() => createCloudTexture(), []);
 
   const selectedFlora = useMemo(
@@ -65,10 +104,9 @@ function Scene({ flora }: InteractiveGlobeProps) {
 
   useEffect(() => {
     return () => {
-      globeTexture.dispose();
       cloudTexture.dispose();
     };
-  }, [cloudTexture, globeTexture]);
+  }, [cloudTexture]);
 
   useFrame((state, delta) => {
     if (!globeRef.current || !cloudRef.current) {
@@ -109,35 +147,23 @@ function Scene({ flora }: InteractiveGlobeProps) {
 
   return (
     <>
-      <color attach="background" args={["#02040a"]} />
-      <fog attach="fog" args={["#02040a", 9, 18]} />
-      <ambientLight intensity={0.9} />
-      <directionalLight position={[6, 4, 5]} intensity={2.6} color="#dbeafe" />
-      <directionalLight position={[-4, -2, 3]} intensity={1.4} color="#67e8f9" />
-      <pointLight position={[-6, -1, -4]} intensity={12} color="#22d3ee" />
-      <pointLight position={[2, 4, -5]} intensity={10} color="#818cf8" />
-      <hemisphereLight args={["#d7f9ff", "#08111d", 1.15]} />
-      <Stars radius={80} depth={30} count={4200} factor={4} saturation={0} fade speed={0.35} />
-
       <group ref={globeRef} position={[-0.45, 0.02, 0]}>
         <group rotation={[0, GLOBE_TEXTURE_ROTATION, 0]}>
           <Sphere args={[SURFACE_RADIUS, 128, 128]}>
-            <meshStandardMaterial
-              map={globeTexture}
-              bumpMap={globeTexture}
-              bumpScale={0.12}
-              roughness={0.92}
-              metalness={0.05}
-              emissive="#071727"
-              emissiveIntensity={0.24}
+            <meshPhongMaterial
+              map={dayTexture}
+              normalMap={normalTexture}
+              normalScale={new Vector2(0.85, 0.85)}
+              shininess={24}
+              specular="#7dd3fc"
             />
           </Sphere>
 
           <Sphere args={[SURFACE_RADIUS + 0.018, 96, 96]}>
             <meshBasicMaterial
-              color="#b8f3ff"
+              color="#bfe7ff"
               transparent
-              opacity={0.08}
+              opacity={0.05}
               side={DoubleSide}
             />
           </Sphere>

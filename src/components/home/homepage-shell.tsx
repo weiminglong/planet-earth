@@ -494,7 +494,7 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
           </div>
         </section>
 
-        <section className="relative flex min-h-[32rem] items-stretch py-2 lg:min-h-[calc(100vh-10rem)] lg:py-8">
+        <section className="relative flex h-[32rem] self-start items-stretch py-2 lg:h-[calc(100vh-10rem)] lg:py-8">
           <div className="absolute inset-0 rounded-[2.2rem] border border-white/8 bg-white/4 backdrop-blur-[1px]" />
           <div className="relative flex-1 overflow-hidden rounded-[2.2rem]">
             <GlobeHud
