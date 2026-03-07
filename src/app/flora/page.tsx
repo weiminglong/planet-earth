@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { FloraIndexClient } from "@/components/flora/flora-index-client";
 import { SiteHeader } from "@/components/site/site-header";
 import { getAllFlora } from "@/lib/flora-data";
@@ -27,9 +28,19 @@ export default async function FloraPage() {
             cards for every seeded flora entry in the current build.
           </p>
 
-          <FloraIndexClient flora={flora} />
+          <Suspense fallback={<FloraIndexFallback />}>
+            <FloraIndexClient flora={flora} />
+          </Suspense>
         </section>
       </div>
+    </div>
+  );
+}
+
+function FloraIndexFallback() {
+  return (
+    <div className="mt-10 rounded-[2rem] border border-white/10 bg-white/5 p-6 text-sm text-white/68">
+      Loading flora filters...
     </div>
   );
 }
