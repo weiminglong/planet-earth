@@ -31,6 +31,9 @@ export function SiteHeader({
         <Link href="/" className="transition hover:text-white">
           Home
         </Link>
+        <Link href="/regions" className="transition hover:text-white">
+          Regions
+        </Link>
         <Link href="/flora" className="transition hover:text-white">
           Flora Index
         </Link>

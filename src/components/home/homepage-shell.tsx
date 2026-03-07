@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import type { FloraPreview } from "@/lib/flora-data";
+import { filterFloraCollection } from "@/lib/flora-filters";
+import type { RegionPreview } from "@/lib/region-data";
 import { getFloraPalette } from "@/lib/visual-theme";
 import { SiteHeader } from "@/components/site/site-header";
 import { SelectionDrawer } from "@/components/home/selection-drawer";
@@ -27,56 +29,80 @@ const InteractiveGlobe = dynamic(
 
 type HomepageShellProps = {
   flora: FloraPreview[];
+  regions: RegionPreview[];
 };
 
-export function HomepageShell({ flora }: HomepageShellProps) {
+export function HomepageShell({ flora, regions }: HomepageShellProps) {
   const [query, setQuery] = useState("");
-  const [activeBiome, setActiveBiome] = useState("All biomes");
-  const [activeRegion, setActiveRegion] = useState("All regions");
+  const [activeBiome, setActiveBiome] = useState("all");
+  const [activeRegion, setActiveRegion] = useState("all");
+  const [activeContinent, setActiveContinent] = useState("all");
   const selectedSlug = useExploreStore((state) => state.selectedSlug);
   const setSelectedSlug = useExploreStore((state) => state.setSelectedSlug);
 
   const biomeFilters = useMemo(
     () => [
-      "All biomes",
-      ...new Set(flora.flatMap((item) => item.biomes.map((biome) => biome.name))),
+      { label: "All biomes", value: "all" },
+      ...flora
+        .flatMap((item) => item.biomes)
+        .filter(
+          (biome, index, collection) =>
+            collection.findIndex((candidate) => candidate.slug === biome.slug) === index,
+        )
+        .sort((left, right) => left.name.localeCompare(right.name))
+        .map((biome) => ({
+          label: biome.name,
+          value: biome.slug,
+        })),
     ],
     [flora],
   );
 
   const regionFilters = useMemo(
     () => [
-      "All regions",
-      ...new Set(
-        flora
-          .map((item) => item.primaryRegion?.name)
-          .filter((value): value is string => Boolean(value)),
-      ),
+      { label: "All regions", value: "all" },
+      ...flora
+        .map((item) => item.primaryRegion)
+        .filter((region): region is NonNullable<typeof region> => Boolean(region))
+        .filter(
+          (region, index, collection) =>
+            collection.findIndex((candidate) => candidate.slug === region.slug) === index,
+        )
+        .sort((left, right) => left.name.localeCompare(right.name))
+        .map((region) => ({
+          label: region.name,
+          value: region.slug,
+        })),
+    ],
+    [flora],
+  );
+
+  const continentFilters = useMemo(
+    () => [
+      { label: "All continents", value: "all" },
+      ...flora
+        .flatMap((item) => item.continents)
+        .filter(
+          (continent, index, collection) =>
+            collection.findIndex((candidate) => candidate.slug === continent.slug) === index,
+        )
+        .sort((left, right) => left.name.localeCompare(right.name))
+        .map((continent) => ({
+          label: continent.name,
+          value: continent.slug,
+        })),
     ],
     [flora],
   );
 
   const filteredFlora = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-
-    return flora.filter((item) => {
-      const matchesQuery =
-        normalizedQuery.length === 0 ||
-        item.commonName.toLowerCase().includes(normalizedQuery) ||
-        item.scientificName.toLowerCase().includes(normalizedQuery) ||
-        item.primaryRegion?.name.toLowerCase().includes(normalizedQuery) ||
-        item.biomes.some((biome) => biome.name.toLowerCase().includes(normalizedQuery));
-
-      const matchesBiome =
-        activeBiome === "All biomes" ||
-        item.biomes.some((biome) => biome.name === activeBiome);
-
-      const matchesRegion =
-        activeRegion === "All regions" || item.primaryRegion?.name === activeRegion;
-
-      return matchesQuery && matchesBiome && matchesRegion;
+    return filterFloraCollection(flora, {
+      query,
+      biome: activeBiome,
+      region: activeRegion,
+      continent: activeContinent,
     });
-  }, [activeBiome, activeRegion, flora, query]);
+  }, [activeBiome, activeContinent, activeRegion, flora, query]);
 
   useEffect(() => {
     if (!filteredFlora.length) {
@@ -145,6 +171,12 @@ export function HomepageShell({ flora }: HomepageShellProps) {
               options={biomeFilters}
               activeValue={activeBiome}
               onSelect={setActiveBiome}
+            />
+            <FilterRow
+              label="Continent"
+              options={continentFilters}
+              activeValue={activeContinent}
+              onSelect={setActiveContinent}
             />
             <FilterRow
               label="Region"
@@ -238,6 +270,52 @@ export function HomepageShell({ flora }: HomepageShellProps) {
               )}
             </div>
           </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-white/38">
+                  Featured regions
+                </p>
+                <h2 className="mt-2 font-display text-3xl text-white">
+                  Places to keep exploring after the globe
+                </h2>
+              </div>
+              <Link
+                href="/regions"
+                className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/72 transition hover:border-white/20 hover:text-white"
+              >
+                Open region index
+              </Link>
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              {regions.map((region) => (
+                <Link
+                  key={region.slug}
+                  href={`/regions/${region.slug}`}
+                  className="rounded-[1.75rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.12),_transparent_24%),rgba(255,255,255,0.04)] p-5 transition hover:-translate-y-1 hover:border-white/20"
+                >
+                  <div className="flex flex-wrap gap-2 text-[0.68rem] uppercase tracking-[0.24em] text-white/44">
+                    {region.parentRegion ? (
+                      <span className="rounded-full border border-white/10 px-3 py-1">
+                        {region.parentRegion.name}
+                      </span>
+                    ) : null}
+                    <span className="rounded-full border border-white/10 px-3 py-1">
+                      {region.floraCount} flora
+                    </span>
+                  </div>
+                  <h3 className="mt-5 font-display text-3xl text-white">
+                    {region.name}
+                  </h3>
+                  <p className="mt-4 text-sm leading-7 text-white/72">
+                    {region.summary}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
         </section>
 
         <section className="relative flex min-h-[32rem] items-stretch py-2 lg:min-h-[calc(100vh-10rem)] lg:py-8">
@@ -270,7 +348,10 @@ function FilterRow({
   onSelect,
 }: {
   label: string;
-  options: string[];
+  options: Array<{
+    label: string;
+    value: string;
+  }>;
   activeValue: string;
   onSelect: (value: string) => void;
 }) {
@@ -280,16 +361,16 @@ function FilterRow({
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
           <button
-            key={option}
+            key={option.value}
             type="button"
-            onClick={() => onSelect(option)}
+            onClick={() => onSelect(option.value)}
             className={`rounded-full border px-3 py-2 text-xs uppercase tracking-[0.18em] transition ${
-              activeValue === option
+              activeValue === option.value
                 ? "border-cyan-300/55 bg-cyan-300/12 text-cyan-100"
                 : "border-white/10 bg-black/15 text-white/58 hover:border-white/18 hover:text-white"
             }`}
           >
-            {option}
+            {option.label}
           </button>
         ))}
       </div>

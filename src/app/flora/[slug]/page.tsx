@@ -86,6 +86,23 @@ export default async function FloraDetailPage({ params }: FloraDetailPageProps) 
                   value={flora.conservationStatus ?? "Undocumented"}
                 />
               </div>
+
+              <div className="flex flex-wrap gap-3">
+                {flora.primaryRegion ? (
+                  <Link
+                    href={`/regions/${flora.primaryRegion.slug}`}
+                    className="rounded-full border border-white/10 px-5 py-3 text-sm text-white/72 transition hover:border-white/20 hover:text-white"
+                  >
+                    Explore {flora.primaryRegion.name}
+                  </Link>
+                ) : null}
+                <Link
+                  href="/flora"
+                  className="rounded-full border border-white/10 px-5 py-3 text-sm text-white/72 transition hover:border-white/20 hover:text-white"
+                >
+                  Browse all flora
+                </Link>
+              </div>
             </div>
 
             <div className="space-y-5">
@@ -207,6 +224,16 @@ export default async function FloraDetailPage({ params }: FloraDetailPageProps) 
                       borderColor: relatedPalette.border,
                     }}
                   >
+                    <div className="flex flex-wrap gap-2 text-[0.68rem] uppercase tracking-[0.2em] text-white/44">
+                      {related.reasons.slice(0, 2).map((reason) => (
+                        <span
+                          key={reason}
+                          className="rounded-full border border-white/10 px-3 py-1"
+                        >
+                          {reason}
+                        </span>
+                      ))}
+                    </div>
                     <p className="text-xs uppercase tracking-[0.24em] text-white/44">
                       {related.primaryRegion?.name ?? "Curated flora"}
                     </p>

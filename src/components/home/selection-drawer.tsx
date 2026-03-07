@@ -121,6 +121,14 @@ function DrawerCard({ flora }: { flora: FloraPreview }) {
         >
           Open flora story
         </Link>
+        {flora.primaryRegion ? (
+          <Link
+            href={`/regions/${flora.primaryRegion.slug}`}
+            className="rounded-full border border-white/10 px-5 py-3 text-sm text-white/75 transition hover:border-white/20 hover:text-white"
+          >
+            Explore region
+          </Link>
+        ) : null}
         <Link
           href="/flora"
           className="rounded-full border border-white/10 px-5 py-3 text-sm text-white/75 transition hover:border-white/20 hover:text-white"
