@@ -13,7 +13,7 @@ import {
   Vector2,
 } from "three";
 import type { FloraPreview } from "@/lib/flora-data";
-import { createCloudTexture } from "@/lib/globe-geography";
+import { createCloudTexture, createModernEarthTexture } from "@/lib/globe-geography";
 import { getFloraPalette } from "@/lib/visual-theme";
 import { useExploreStore } from "@/store/explore-store";
 
@@ -25,6 +25,22 @@ const UP_VECTOR = new Vector3(0, 1, 0);
 type InteractiveGlobeProps = {
   flora: FloraPreview[];
 };
+
+type TextureImageSource = CanvasImageSource & {
+  width: number;
+  height: number;
+};
+
+function hasTextureImageSource(image: unknown): image is TextureImageSource {
+  return (
+    typeof image === "object" &&
+    image !== null &&
+    "width" in image &&
+    typeof image.width === "number" &&
+    "height" in image &&
+    typeof image.height === "number"
+  );
+}
 
 useTexture.preload("/textures/earth_daymap.jpg");
 useTexture.preload("/textures/earth_normal.jpg");
@@ -59,12 +75,12 @@ function SceneChrome() {
     <>
       <color attach="background" args={["#02040a"]} />
       <fog attach="fog" args={["#02040a", 9, 18]} />
-      <ambientLight intensity={0.9} />
-      <directionalLight position={[6, 4, 5]} intensity={2.6} color="#dbeafe" />
-      <directionalLight position={[-4, -2, 3]} intensity={1.4} color="#67e8f9" />
-      <pointLight position={[-6, -1, -4]} intensity={12} color="#22d3ee" />
-      <pointLight position={[2, 4, -5]} intensity={10} color="#818cf8" />
-      <hemisphereLight args={["#d7f9ff", "#08111d", 1.15]} />
+      <ambientLight intensity={0.46} />
+      <directionalLight position={[6, 4, 5]} intensity={2.1} color="#f8fbff" />
+      <directionalLight position={[-4, -2, 3]} intensity={0.82} color="#60a5fa" />
+      <pointLight position={[-6, -1, -4]} intensity={5.2} color="#22d3ee" />
+      <pointLight position={[2, 4, -5]} intensity={4.4} color="#818cf8" />
+      <hemisphereLight args={["#cffafe", "#050b14", 0.9]} />
       <Stars radius={80} depth={30} count={4200} factor={4} saturation={0} fade speed={0.35} />
     </>
   );
@@ -74,10 +90,10 @@ function SceneFallback() {
   return (
     <group position={[-0.45, 0.02, 0]}>
       <Sphere args={[SURFACE_RADIUS, 96, 96]}>
-        <meshPhongMaterial color="#14324a" shininess={16} specular="#67e8f9" />
+        <meshStandardMaterial color="#10263e" roughness={0.76} metalness={0.04} />
       </Sphere>
       <Sphere args={[SURFACE_RADIUS + 0.018, 64, 64]}>
-        <meshBasicMaterial color="#bfe7ff" transparent opacity={0.05} side={DoubleSide} />
+        <meshBasicMaterial color="#bfe7ff" transparent opacity={0.04} side={DoubleSide} />
       </Sphere>
     </group>
   );
@@ -96,6 +112,13 @@ function Scene({ flora }: InteractiveGlobeProps) {
     "/textures/earth_normal.jpg",
   ]);
   const cloudTexture = useMemo(() => createCloudTexture(), []);
+  const modernDayTexture = useMemo(() => {
+    if (!hasTextureImageSource(dayTexture.image)) {
+      return null;
+    }
+
+    return createModernEarthTexture(dayTexture.image);
+  }, [dayTexture.image]);
 
   const selectedFlora = useMemo(
     () => flora.find((item) => item.slug === selectedSlug) ?? null,
@@ -104,9 +127,10 @@ function Scene({ flora }: InteractiveGlobeProps) {
 
   useEffect(() => {
     return () => {
+      modernDayTexture?.dispose();
       cloudTexture.dispose();
     };
-  }, [cloudTexture]);
+  }, [cloudTexture, modernDayTexture]);
 
   useFrame((state, delta) => {
     if (!globeRef.current || !cloudRef.current) {
@@ -150,20 +174,22 @@ function Scene({ flora }: InteractiveGlobeProps) {
       <group ref={globeRef} position={[-0.45, 0.02, 0]}>
         <group rotation={[0, GLOBE_TEXTURE_ROTATION, 0]}>
           <Sphere args={[SURFACE_RADIUS, 128, 128]}>
-            <meshPhongMaterial
-              map={dayTexture}
+            <meshStandardMaterial
+              map={modernDayTexture ?? dayTexture}
               normalMap={normalTexture}
-              normalScale={new Vector2(0.85, 0.85)}
-              shininess={24}
-              specular="#7dd3fc"
+              normalScale={new Vector2(0.58, 0.58)}
+              roughness={0.9}
+              metalness={0.02}
+              emissive="#04111f"
+              emissiveIntensity={0.08}
             />
           </Sphere>
 
-          <Sphere args={[SURFACE_RADIUS + 0.018, 96, 96]}>
+          <Sphere args={[SURFACE_RADIUS + 0.022, 96, 96]}>
             <meshBasicMaterial
-              color="#bfe7ff"
+              color="#a5dbff"
               transparent
-              opacity={0.05}
+              opacity={0.035}
               side={DoubleSide}
             />
           </Sphere>
@@ -172,40 +198,41 @@ function Scene({ flora }: InteractiveGlobeProps) {
             <Sphere args={[SURFACE_RADIUS + 0.08, 96, 96]}>
               <meshStandardMaterial
                 map={cloudTexture}
+                color="#ecfeff"
                 transparent
-                opacity={0.28}
+                opacity={0.17}
                 depthWrite={false}
-                emissive="#e2f6ff"
-                emissiveIntensity={0.2}
+                emissive="#d9f5ff"
+                emissiveIntensity={0.08}
               />
             </Sphere>
           </group>
         </group>
 
-        <Sphere args={[SURFACE_RADIUS + 0.14, 96, 96]}>
+        <Sphere args={[SURFACE_RADIUS + 0.13, 96, 96]}>
           <meshBasicMaterial
-            color="#9ee8ff"
+            color="#8fdcff"
             transparent
-            opacity={0.05}
+            opacity={0.045}
             side={DoubleSide}
           />
         </Sphere>
 
         <group>
-          <Sphere args={[SURFACE_RADIUS + 0.22, 96, 96]}>
+          <Sphere args={[SURFACE_RADIUS + 0.2, 96, 96]}>
             <meshBasicMaterial
-              color="#67e8f9"
+              color="#6ed6ff"
               transparent
-              opacity={0.05}
+              opacity={0.028}
               side={DoubleSide}
             />
           </Sphere>
 
-          <Sphere args={[SURFACE_RADIUS + 0.3, 96, 96]}>
+          <Sphere args={[SURFACE_RADIUS + 0.28, 96, 96]}>
             <meshBasicMaterial
-              color="#dbeafe"
+              color="#d7eeff"
               transparent
-              opacity={0.018}
+              opacity={0.014}
               side={DoubleSide}
             />
           </Sphere>
