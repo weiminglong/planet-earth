@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Region {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  type           String
+  parentRegionId String?
+  parentRegion   Region?  @relation("RegionHierarchy", fields: [parentRegionId], references: [id])
+  childRegions   Region[] @relation("RegionHierarchy")
+  lat            Float
+  lng            Float
+  summary        String
+  climateNotes   String?
+  heroImage      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  floraOccurrences FloraRegionOccurrence[]
+}
+
+model Flora {
+  id                 String   @id @default(cuid())
+  commonName         String
+  scientificName     String
+  slug               String   @unique
+  shortDescription   String
+  longDescription    String
+  family             String?
+  genus              String?
+  species            String?
+  conservationStatus String?
+  bloomSeason        String?
+  featured           Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  regionOccurrences FloraRegionOccurrence[]
+  biomes            FloraBiome[]
+  facts             FloraFact[]
+  culturalNotes     FloraCulturalNote[]
+  media             MediaAsset[]
+  tags              Tag[]
+}
+
+model Biome {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  description    String
+  climateProfile String?
+  visualTheme    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  flora FloraBiome[]
+}
+
+model FloraRegionOccurrence {
+  id             String  @id @default(cuid())
+  floraId        String
+  regionId       String
+  abundanceScore Float?
+  isNative       Boolean @default(true)
+  isEndemic      Boolean @default(false)
+  notes          String?
+
+  flora  Flora  @relation(fields: [floraId], references: [id], onDelete: Cascade)
+  region Region @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  @@unique([floraId, regionId])
+}
+
+model FloraBiome {
+  id      String @id @default(cuid())
+  floraId String
+  biomeId String
+
+  flora Flora @relation(fields: [floraId], references: [id], onDelete: Cascade)
+  biome Biome @relation(fields: [biomeId], references: [id], onDelete: Cascade)
+
+  @@unique([floraId, biomeId])
+}
+
+model FloraFact {
+  id      String @id @default(cuid())
+  floraId String
+  fact    String
+
+  flora Flora @relation(fields: [floraId], references: [id], onDelete: Cascade)
+}
+
+model FloraCulturalNote {
+  id      String @id @default(cuid())
+  floraId String
+  note    String
+
+  flora Flora @relation(fields: [floraId], references: [id], onDelete: Cascade)
+}
+
+model MediaAsset {
+  id      String  @id @default(cuid())
+  type    String
+  url     String
+  alt     String
+  credit  String?
+  license String?
+  floraId String?
+
+  flora Flora? @relation(fields: [floraId], references: [id], onDelete: Cascade)
+}
+
+model Tag {
+  id      String @id @default(cuid())
+  name    String @unique
+  floraId String?
+
+  flora Flora? @relation(fields: [floraId], references: [id], onDelete: Cascade)
+}
