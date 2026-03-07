@@ -181,7 +181,7 @@ export default async function FloraDetailPage({ params }: FloraDetailPageProps) 
                 Continue exploring
               </p>
               <h2 className="mt-2 font-display text-4xl text-white">
-                Nearby flora stories
+                Related flora stories
               </h2>
             </div>
             <Link
