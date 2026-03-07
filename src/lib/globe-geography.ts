@@ -5,6 +5,8 @@ type DrawableTextureSource = CanvasImageSource & {
   height: number;
 };
 
+type RgbColor = [number, number, number];
+
 export function createModernEarthTexture(source: DrawableTextureSource) {
   const canvas = document.createElement("canvas");
   canvas.width = source.width;
@@ -44,6 +46,126 @@ export function createModernEarthTexture(source: DrawableTextureSource) {
   polarFade.addColorStop(1, "rgba(3, 7, 18, 0.2)");
   context.globalCompositeOperation = "multiply";
   context.fillStyle = polarFade;
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  const texture = new CanvasTexture(canvas);
+  texture.colorSpace = SRGBColorSpace;
+  texture.minFilter = LinearFilter;
+  texture.magFilter = LinearFilter;
+  return texture;
+}
+
+export function createAppleMapTexture(
+  source: DrawableTextureSource,
+  reliefSource?: DrawableTextureSource,
+) {
+  const canvas = document.createElement("canvas");
+  canvas.width = source.width;
+  canvas.height = source.height;
+
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("Unable to create a 2D context for the Apple-style Earth texture.");
+  }
+
+  const sourceCanvas = document.createElement("canvas");
+  sourceCanvas.width = source.width;
+  sourceCanvas.height = source.height;
+  const sourceContext = sourceCanvas.getContext("2d");
+
+  if (!sourceContext) {
+    throw new Error("Unable to create an intermediate context for the Apple-style texture.");
+  }
+
+  sourceContext.drawImage(source, 0, 0, source.width, source.height);
+  const sourcePixels = sourceContext.getImageData(0, 0, source.width, source.height);
+
+  const reliefPixels = reliefSource
+    ? (() => {
+        const reliefCanvas = document.createElement("canvas");
+        reliefCanvas.width = reliefSource.width;
+        reliefCanvas.height = reliefSource.height;
+        const reliefContext = reliefCanvas.getContext("2d");
+
+        if (!reliefContext) {
+          return null;
+        }
+
+        reliefContext.drawImage(reliefSource, 0, 0, reliefSource.width, reliefSource.height);
+        return reliefContext.getImageData(0, 0, reliefSource.width, reliefSource.height);
+      })()
+    : null;
+
+  const output = context.createImageData(source.width, source.height);
+
+  for (let offset = 0; offset < sourcePixels.data.length; offset += 4) {
+    const red = sourcePixels.data[offset] / 255;
+    const green = sourcePixels.data[offset + 1] / 255;
+    const blue = sourcePixels.data[offset + 2] / 255;
+    const luminance = red * 0.2126 + green * 0.7152 + blue * 0.0722;
+
+    const waterLike = blue > green * 0.98 && blue > red * 1.05 && luminance < 0.78;
+    const polarLike =
+      luminance > 0.82 &&
+      Math.abs(red - green) < 0.06 &&
+      Math.abs(green - blue) < 0.06;
+    const desertLike = red > green * 1.04 && green > blue * 1.02 && luminance > 0.45;
+    const vegetationLike = green > red * 0.98 && green > blue * 1.08;
+
+    let color: RgbColor;
+
+    if (waterLike) {
+      const depth = clamp((0.76 - luminance) / 0.52, 0, 1);
+      color = mixRgb([185, 211, 232], [123, 166, 205], depth);
+    } else if (polarLike) {
+      color = mixRgb([244, 247, 250], [229, 236, 243], clamp((luminance - 0.82) / 0.18, 0, 1));
+    } else if (desertLike) {
+      color = mixRgb([227, 217, 202], [208, 194, 175], clamp((red - blue) * 1.5, 0, 1));
+    } else if (vegetationLike) {
+      color = mixRgb([210, 219, 205], [192, 207, 190], clamp((green - blue) * 1.2, 0, 1));
+    } else {
+      color = mixRgb([227, 230, 222], [209, 214, 208], clamp((0.6 - luminance) * 1.4, 0, 1));
+    }
+
+    if (!waterLike && reliefPixels) {
+      const reliefRed = reliefPixels.data[offset];
+      const reliefGreen = reliefPixels.data[offset + 1];
+      const reliefBlue = reliefPixels.data[offset + 2];
+      const reliefStrength = clamp(
+        (Math.abs(reliefRed - 128) + Math.abs(reliefGreen - 128) + Math.abs(reliefBlue - 255)) /
+          170,
+        0,
+        1,
+      );
+      const highlight = reliefGreen > 128 ? reliefStrength * 0.06 : -reliefStrength * 0.08;
+      color = applyLightness(color, highlight);
+    }
+
+    output.data[offset] = color[0];
+    output.data[offset + 1] = color[1];
+    output.data[offset + 2] = color[2];
+    output.data[offset + 3] = sourcePixels.data[offset + 3];
+  }
+
+  context.putImageData(output, 0, 0);
+
+  const oceanGlow = context.createLinearGradient(0, 0, 0, canvas.height);
+  oceanGlow.addColorStop(0, "rgba(255,255,255,0)");
+  oceanGlow.addColorStop(0.36, "rgba(255,255,255,0.05)");
+  oceanGlow.addColorStop(0.52, "rgba(255,255,255,0.08)");
+  oceanGlow.addColorStop(0.68, "rgba(255,255,255,0.05)");
+  oceanGlow.addColorStop(1, "rgba(255,255,255,0)");
+  context.globalCompositeOperation = "screen";
+  context.fillStyle = oceanGlow;
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  const glassShade = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+  glassShade.addColorStop(0, "rgba(255,255,255,0.1)");
+  glassShade.addColorStop(0.45, "rgba(255,255,255,0)");
+  glassShade.addColorStop(1, "rgba(14, 26, 43, 0.14)");
+  context.globalCompositeOperation = "soft-light";
+  context.fillStyle = glassShade;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   const texture = new CanvasTexture(canvas);
@@ -108,4 +230,24 @@ export function createCloudTexture() {
   texture.minFilter = LinearFilter;
   texture.magFilter = LinearFilter;
   return texture;
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function mixRgb(from: RgbColor, to: RgbColor, amount: number): RgbColor {
+  return [
+    Math.round(from[0] + (to[0] - from[0]) * amount),
+    Math.round(from[1] + (to[1] - from[1]) * amount),
+    Math.round(from[2] + (to[2] - from[2]) * amount),
+  ];
+}
+
+function applyLightness(color: RgbColor, amount: number): RgbColor {
+  return [
+    Math.round(clamp(color[0] * (1 + amount), 0, 255)),
+    Math.round(clamp(color[1] * (1 + amount), 0, 255)),
+    Math.round(clamp(color[2] * (1 + amount), 0, 255)),
+  ];
 }

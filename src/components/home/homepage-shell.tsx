@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import type { GlobeMapMode } from "@/components/globe/interactive-globe";
 import type { FloraPreview } from "@/lib/flora-data";
 import { filterFloraCollection } from "@/lib/flora-filters";
 import type { RegionPreview } from "@/lib/region-data";
@@ -41,6 +42,7 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
   const [activeSeasonality, setActiveSeasonality] = useState("all");
   const [activeOrigin, setActiveOrigin] = useState("all");
   const [activeStatus, setActiveStatus] = useState("all");
+  const [mapMode, setMapMode] = useState<GlobeMapMode>("map");
   const selectedSlug = useExploreStore((state) => state.selectedSlug);
   const setSelectedSlug = useExploreStore((state) => state.setSelectedSlug);
 
@@ -497,13 +499,15 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
         <section className="relative flex h-[32rem] self-start items-stretch py-2 lg:h-[calc(100vh-10rem)] lg:py-8">
           <div className="absolute inset-0 rounded-[2.2rem] border border-white/8 bg-white/4 backdrop-blur-[1px]" />
           <div className="relative flex-1 overflow-hidden rounded-[2.2rem]">
+            <MapModeToggle mapMode={mapMode} onChange={setMapMode} />
             <GlobeHud
               flora={filteredFlora}
               query={query}
               activeSeasonality={activeSeasonality}
               activeFloraType={activeFloraType}
+              mapMode={mapMode}
             />
-            <InteractiveGlobe flora={filteredFlora} />
+            <InteractiveGlobe flora={filteredFlora} mapMode={mapMode} />
             <SelectionDrawer flora={selectedFlora} />
           </div>
         </section>
@@ -562,11 +566,13 @@ function GlobeHud({
   query,
   activeSeasonality,
   activeFloraType,
+  mapMode,
 }: {
   flora: FloraPreview[];
   query: string;
   activeSeasonality: string;
   activeFloraType: string;
+  mapMode: GlobeMapMode;
 }) {
   return (
     <>
@@ -584,6 +590,7 @@ function GlobeHud({
       </div>
 
       <div className="pointer-events-none absolute bottom-4 left-4 z-10 flex max-w-[30rem] flex-wrap gap-2">
+        <HudChip label="View" value={mapMode === "map" ? "Map" : "Satellite"} />
         <HudChip label="Search" value={query.trim() || "All flora"} />
         <HudChip
           label="Seasonality"
@@ -595,6 +602,40 @@ function GlobeHud({
         />
       </div>
     </>
+  );
+}
+
+function MapModeToggle({
+  mapMode,
+  onChange,
+}: {
+  mapMode: GlobeMapMode;
+  onChange: (mode: GlobeMapMode) => void;
+}) {
+  return (
+    <div className="absolute right-4 top-4 z-20 flex rounded-full border border-white/10 bg-slate-950/62 p-1 backdrop-blur-xl">
+      {[
+        { label: "Map", value: "map" },
+        { label: "Satellite", value: "satellite" },
+      ].map((option) => {
+        const active = mapMode === option.value;
+
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onChange(option.value as GlobeMapMode)}
+            className={`rounded-full px-4 py-2 text-[0.68rem] uppercase tracking-[0.24em] transition ${
+              active
+                ? "bg-white text-slate-950 shadow-[0_8px_24px_-16px_rgba(255,255,255,0.9)]"
+                : "text-white/62 hover:text-white"
+            }`}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 

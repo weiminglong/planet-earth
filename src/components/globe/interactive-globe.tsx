@@ -13,7 +13,11 @@ import {
   Vector2,
 } from "three";
 import type { FloraPreview } from "@/lib/flora-data";
-import { createCloudTexture, createModernEarthTexture } from "@/lib/globe-geography";
+import {
+  createAppleMapTexture,
+  createCloudTexture,
+  createModernEarthTexture,
+} from "@/lib/globe-geography";
 import { getFloraPalette } from "@/lib/visual-theme";
 import { useExploreStore } from "@/store/explore-store";
 
@@ -24,7 +28,14 @@ const UP_VECTOR = new Vector3(0, 1, 0);
 
 type InteractiveGlobeProps = {
   flora: FloraPreview[];
+  mapMode: GlobeMapMode;
 };
+
+type GlobeFloraProps = {
+  flora: FloraPreview[];
+};
+
+export type GlobeMapMode = "map" | "satellite";
 
 type TextureImageSource = CanvasImageSource & {
   width: number;
@@ -45,7 +56,7 @@ function hasTextureImageSource(image: unknown): image is TextureImageSource {
 useTexture.preload("/textures/earth_daymap.jpg");
 useTexture.preload("/textures/earth_normal.jpg");
 
-export function InteractiveGlobe({ flora }: InteractiveGlobeProps) {
+export function InteractiveGlobe({ flora, mapMode }: InteractiveGlobeProps) {
   const [isWebGlAvailable] = useState<boolean>(() => detectWebGlSupport());
   const setSelectedSlug = useExploreStore((state) => state.setSelectedSlug);
 
@@ -61,45 +72,76 @@ export function InteractiveGlobe({ flora }: InteractiveGlobeProps) {
         gl={{ antialias: true, alpha: true }}
         onPointerMissed={() => setSelectedSlug(null)}
       >
-        <SceneChrome />
-        <Suspense fallback={<SceneFallback />}>
-          <Scene flora={flora} />
+        <SceneChrome mapMode={mapMode} />
+        <Suspense fallback={<SceneFallback mapMode={mapMode} />}>
+          <Scene flora={flora} mapMode={mapMode} />
         </Suspense>
       </Canvas>
     </div>
   );
 }
 
-function SceneChrome() {
+function SceneChrome({ mapMode }: { mapMode: GlobeMapMode }) {
   return (
     <>
       <color attach="background" args={["#02040a"]} />
       <fog attach="fog" args={["#02040a", 9, 18]} />
-      <ambientLight intensity={0.46} />
-      <directionalLight position={[6, 4, 5]} intensity={2.1} color="#f8fbff" />
-      <directionalLight position={[-4, -2, 3]} intensity={0.82} color="#60a5fa" />
-      <pointLight position={[-6, -1, -4]} intensity={5.2} color="#22d3ee" />
-      <pointLight position={[2, 4, -5]} intensity={4.4} color="#818cf8" />
-      <hemisphereLight args={["#cffafe", "#050b14", 0.9]} />
+      <ambientLight intensity={mapMode === "map" ? 0.62 : 0.46} />
+      <directionalLight
+        position={[6, 4, 5]}
+        intensity={mapMode === "map" ? 1.8 : 2.1}
+        color={mapMode === "map" ? "#ffffff" : "#f8fbff"}
+      />
+      <directionalLight
+        position={[-4, -2, 3]}
+        intensity={mapMode === "map" ? 0.52 : 0.82}
+        color={mapMode === "map" ? "#93c5fd" : "#60a5fa"}
+      />
+      <pointLight
+        position={[-6, -1, -4]}
+        intensity={mapMode === "map" ? 3.6 : 5.2}
+        color="#22d3ee"
+      />
+      <pointLight
+        position={[2, 4, -5]}
+        intensity={mapMode === "map" ? 2.8 : 4.4}
+        color="#818cf8"
+      />
+      <hemisphereLight
+        args={[
+          mapMode === "map" ? "#e0f2fe" : "#cffafe",
+          mapMode === "map" ? "#08111c" : "#050b14",
+          mapMode === "map" ? 1.08 : 0.9,
+        ]}
+      />
       <Stars radius={80} depth={30} count={4200} factor={4} saturation={0} fade speed={0.35} />
     </>
   );
 }
 
-function SceneFallback() {
+function SceneFallback({ mapMode }: { mapMode: GlobeMapMode }) {
   return (
     <group position={[-0.45, 0.02, 0]}>
       <Sphere args={[SURFACE_RADIUS, 96, 96]}>
-        <meshStandardMaterial color="#10263e" roughness={0.76} metalness={0.04} />
+        <meshStandardMaterial
+          color={mapMode === "map" ? "#d4dde6" : "#10263e"}
+          roughness={mapMode === "map" ? 0.94 : 0.76}
+          metalness={0.04}
+        />
       </Sphere>
       <Sphere args={[SURFACE_RADIUS + 0.018, 64, 64]}>
-        <meshBasicMaterial color="#bfe7ff" transparent opacity={0.04} side={DoubleSide} />
+        <meshBasicMaterial
+          color={mapMode === "map" ? "#d9efff" : "#bfe7ff"}
+          transparent
+          opacity={mapMode === "map" ? 0.06 : 0.04}
+          side={DoubleSide}
+        />
       </Sphere>
     </group>
   );
 }
 
-function Scene({ flora }: InteractiveGlobeProps) {
+function Scene({ flora, mapMode }: InteractiveGlobeProps) {
   const selectedSlug = useExploreStore((state) => state.selectedSlug);
   const hoveredSlug = useExploreStore((state) => state.hoveredSlug);
   const setSelectedSlug = useExploreStore((state) => state.setSelectedSlug);
@@ -119,6 +161,16 @@ function Scene({ flora }: InteractiveGlobeProps) {
 
     return createModernEarthTexture(dayTexture.image);
   }, [dayTexture.image]);
+  const appleMapTexture = useMemo(() => {
+    if (!hasTextureImageSource(dayTexture.image)) {
+      return null;
+    }
+
+    return createAppleMapTexture(
+      dayTexture.image,
+      hasTextureImageSource(normalTexture.image) ? normalTexture.image : undefined,
+    );
+  }, [dayTexture.image, normalTexture.image]);
 
   const selectedFlora = useMemo(
     () => flora.find((item) => item.slug === selectedSlug) ?? null,
@@ -127,10 +179,16 @@ function Scene({ flora }: InteractiveGlobeProps) {
 
   useEffect(() => {
     return () => {
+      appleMapTexture?.dispose();
       modernDayTexture?.dispose();
       cloudTexture.dispose();
     };
-  }, [cloudTexture, modernDayTexture]);
+  }, [appleMapTexture, cloudTexture, modernDayTexture]);
+
+  const activeSurfaceTexture =
+    mapMode === "map"
+      ? appleMapTexture ?? modernDayTexture ?? dayTexture
+      : modernDayTexture ?? dayTexture;
 
   useFrame((state, delta) => {
     if (!globeRef.current || !cloudRef.current) {
@@ -175,21 +233,23 @@ function Scene({ flora }: InteractiveGlobeProps) {
         <group rotation={[0, GLOBE_TEXTURE_ROTATION, 0]}>
           <Sphere args={[SURFACE_RADIUS, 128, 128]}>
             <meshStandardMaterial
-              map={modernDayTexture ?? dayTexture}
+              map={activeSurfaceTexture}
               normalMap={normalTexture}
-              normalScale={new Vector2(0.58, 0.58)}
-              roughness={0.9}
+              normalScale={
+                mapMode === "map" ? new Vector2(0.18, 0.18) : new Vector2(0.58, 0.58)
+              }
+              roughness={mapMode === "map" ? 0.95 : 0.9}
               metalness={0.02}
-              emissive="#04111f"
-              emissiveIntensity={0.08}
+              emissive={mapMode === "map" ? "#17344d" : "#04111f"}
+              emissiveIntensity={mapMode === "map" ? 0.12 : 0.08}
             />
           </Sphere>
 
           <Sphere args={[SURFACE_RADIUS + 0.022, 96, 96]}>
             <meshBasicMaterial
-              color="#a5dbff"
+              color={mapMode === "map" ? "#cfeaff" : "#a5dbff"}
               transparent
-              opacity={0.035}
+              opacity={mapMode === "map" ? 0.05 : 0.035}
               side={DoubleSide}
             />
           </Sphere>
@@ -200,10 +260,10 @@ function Scene({ flora }: InteractiveGlobeProps) {
                 map={cloudTexture}
                 color="#ecfeff"
                 transparent
-                opacity={0.17}
+                opacity={mapMode === "map" ? 0.09 : 0.17}
                 depthWrite={false}
                 emissive="#d9f5ff"
-                emissiveIntensity={0.08}
+                emissiveIntensity={mapMode === "map" ? 0.05 : 0.08}
               />
             </Sphere>
           </group>
@@ -211,9 +271,9 @@ function Scene({ flora }: InteractiveGlobeProps) {
 
         <Sphere args={[SURFACE_RADIUS + 0.13, 96, 96]}>
           <meshBasicMaterial
-            color="#8fdcff"
+            color={mapMode === "map" ? "#d8f0ff" : "#8fdcff"}
             transparent
-            opacity={0.045}
+            opacity={mapMode === "map" ? 0.06 : 0.045}
             side={DoubleSide}
           />
         </Sphere>
@@ -221,18 +281,18 @@ function Scene({ flora }: InteractiveGlobeProps) {
         <group>
           <Sphere args={[SURFACE_RADIUS + 0.2, 96, 96]}>
             <meshBasicMaterial
-              color="#6ed6ff"
+              color={mapMode === "map" ? "#eff8ff" : "#6ed6ff"}
               transparent
-              opacity={0.028}
+              opacity={mapMode === "map" ? 0.035 : 0.028}
               side={DoubleSide}
             />
           </Sphere>
 
           <Sphere args={[SURFACE_RADIUS + 0.28, 96, 96]}>
             <meshBasicMaterial
-              color="#d7eeff"
+              color={mapMode === "map" ? "#f8fbff" : "#d7eeff"}
               transparent
-              opacity={0.014}
+              opacity={mapMode === "map" ? 0.02 : 0.014}
               side={DoubleSide}
             />
           </Sphere>
@@ -523,7 +583,7 @@ function PetalCluster({
   );
 }
 
-function NoWebGlFallback({ flora }: InteractiveGlobeProps) {
+function NoWebGlFallback({ flora }: GlobeFloraProps) {
   return (
     <div className="flex h-full min-h-[32rem] flex-col justify-between gap-6 bg-[radial-gradient(circle_at_center,_rgba(14,165,233,0.16),_transparent_40%),linear-gradient(180deg,_rgba(2,6,23,0.5),_rgba(2,6,23,0.92))] p-6">
       <div>
