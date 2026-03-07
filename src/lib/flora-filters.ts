@@ -3,6 +3,7 @@ export type FloraFilters = {
   biome?: string | null;
   region?: string | null;
   continent?: string | null;
+  floraType?: string | null;
   status?: string | null;
   season?: string | null;
   origin?: string | null;
@@ -14,6 +15,7 @@ type FloraFilterable = {
   conservationStatus: string | null;
   bloomSeason: string | null;
   bloomWindows: string[];
+  floraType: string;
   regions: Array<{
     name: string;
     slug: string;
@@ -65,6 +67,11 @@ export function filterFloraCollection<T extends FloraFilterable>(
       filters.continent === "all" ||
       item.continents.some((continent) => continent.slug === filters.continent);
 
+    const matchesFloraType =
+      !filters.floraType ||
+      filters.floraType === "all" ||
+      item.floraType === filters.floraType;
+
     const matchesStatus =
       !filters.status ||
       filters.status === "all" ||
@@ -89,6 +96,7 @@ export function filterFloraCollection<T extends FloraFilterable>(
       matchesBiome &&
       matchesRegion &&
       matchesContinent &&
+      matchesFloraType &&
       matchesStatus &&
       matchesSeason &&
       matchesOrigin

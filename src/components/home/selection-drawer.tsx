@@ -67,6 +67,9 @@ function DrawerCard({ flora }: { flora: FloraPreview }) {
           <span className="rounded-full border border-white/10 px-3 py-1">
             {flora.primaryRegion?.name ?? "Global selection"}
           </span>
+          <span className="rounded-full border border-white/10 px-3 py-1">
+            {flora.floraType}
+          </span>
           {flora.biomes[0] ? (
             <span className="rounded-full border border-white/10 px-3 py-1">
               {flora.biomes[0].name}
@@ -85,7 +88,7 @@ function DrawerCard({ flora }: { flora: FloraPreview }) {
         <dl className="mt-6 grid grid-cols-2 gap-3 text-sm">
           <div className="rounded-2xl border border-white/8 bg-white/4 p-3">
             <dt className="text-xs uppercase tracking-[0.22em] text-white/45">
-              Bloom
+              Seasonality
             </dt>
             <dd className="mt-2 text-white/88">
               {flora.bloomSeason ?? "Seasonal variation"}
@@ -98,6 +101,24 @@ function DrawerCard({ flora }: { flora: FloraPreview }) {
             <dd className="mt-2 text-white/88">
               {flora.conservationStatus ?? "Undocumented"}
             </dd>
+          </div>
+          <div className="rounded-2xl border border-white/8 bg-white/4 p-3">
+            <dt className="text-xs uppercase tracking-[0.22em] text-white/45">
+              Origin
+            </dt>
+            <dd className="mt-2 text-white/88">
+              {flora.hasEndemicOccurrence
+                ? "Endemic"
+                : flora.hasNativeOccurrence
+                  ? "Native"
+                  : "Introduced"}
+            </dd>
+          </div>
+          <div className="rounded-2xl border border-white/8 bg-white/4 p-3">
+            <dt className="text-xs uppercase tracking-[0.22em] text-white/45">
+              Flora type
+            </dt>
+            <dd className="mt-2 text-white/88">{flora.floraType}</dd>
           </div>
         </dl>
 

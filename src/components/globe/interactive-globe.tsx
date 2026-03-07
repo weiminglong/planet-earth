@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Sphere, Stars } from "@react-three/drei";
 import {
@@ -12,11 +12,13 @@ import {
   Vector3,
 } from "three";
 import type { FloraPreview } from "@/lib/flora-data";
+import { createCloudTexture, createGlobeTexture } from "@/lib/globe-geography";
 import { getFloraPalette } from "@/lib/visual-theme";
 import { useExploreStore } from "@/store/explore-store";
 
 const SURFACE_RADIUS = 1.96;
-const MARKER_HEIGHT = 0.18;
+const GLOBE_TEXTURE_ROTATION = -Math.PI / 2;
+const MARKER_HEIGHT = 0.2;
 const UP_VECTOR = new Vector3(0, 1, 0);
 
 type InteractiveGlobeProps = {
@@ -53,11 +55,20 @@ function Scene({ flora }: InteractiveGlobeProps) {
   const globeRef = useRef<Group>(null);
   const cloudRef = useRef<Group>(null);
   const idleRotation = useRef(-0.8);
+  const globeTexture = useMemo(() => createGlobeTexture(), []);
+  const cloudTexture = useMemo(() => createCloudTexture(), []);
 
   const selectedFlora = useMemo(
     () => flora.find((item) => item.slug === selectedSlug) ?? null,
     [flora, selectedSlug],
   );
+
+  useEffect(() => {
+    return () => {
+      globeTexture.dispose();
+      cloudTexture.dispose();
+    };
+  }, [cloudTexture, globeTexture]);
 
   useFrame((state, delta) => {
     if (!globeRef.current || !cloudRef.current) {
@@ -105,48 +116,74 @@ function Scene({ flora }: InteractiveGlobeProps) {
       <directionalLight position={[-4, -2, 3]} intensity={1.4} color="#67e8f9" />
       <pointLight position={[-6, -1, -4]} intensity={12} color="#22d3ee" />
       <pointLight position={[2, 4, -5]} intensity={10} color="#818cf8" />
+      <hemisphereLight args={["#d7f9ff", "#08111d", 1.15]} />
       <Stars radius={80} depth={30} count={4200} factor={4} saturation={0} fade speed={0.35} />
 
       <group ref={globeRef} position={[-0.45, 0.02, 0]}>
-        <Sphere args={[SURFACE_RADIUS, 96, 96]}>
-          <meshPhysicalMaterial
-            color="#103a63"
-            roughness={0.76}
-            metalness={0.12}
-            clearcoat={0.38}
-            emissive="#1e3a8a"
-            emissiveIntensity={0.22}
-          />
-        </Sphere>
+        <group rotation={[0, GLOBE_TEXTURE_ROTATION, 0]}>
+          <Sphere args={[SURFACE_RADIUS, 128, 128]}>
+            <meshStandardMaterial
+              map={globeTexture}
+              bumpMap={globeTexture}
+              bumpScale={0.12}
+              roughness={0.92}
+              metalness={0.05}
+              emissive="#071727"
+              emissiveIntensity={0.24}
+            />
+          </Sphere>
 
-        <Sphere args={[SURFACE_RADIUS + 0.03, 72, 72]}>
+          <Sphere args={[SURFACE_RADIUS + 0.018, 96, 96]}>
+            <meshBasicMaterial
+              color="#b8f3ff"
+              transparent
+              opacity={0.08}
+              side={DoubleSide}
+            />
+          </Sphere>
+
+          <group ref={cloudRef}>
+            <Sphere args={[SURFACE_RADIUS + 0.08, 96, 96]}>
+              <meshStandardMaterial
+                map={cloudTexture}
+                transparent
+                opacity={0.28}
+                depthWrite={false}
+                emissive="#e2f6ff"
+                emissiveIntensity={0.2}
+              />
+            </Sphere>
+          </group>
+        </group>
+
+        <Sphere args={[SURFACE_RADIUS + 0.14, 96, 96]}>
           <meshBasicMaterial
-            color="#93c5fd"
+            color="#9ee8ff"
             transparent
-            opacity={0.1}
+            opacity={0.05}
             side={DoubleSide}
           />
         </Sphere>
 
-        <group ref={cloudRef}>
-          <Sphere args={[SURFACE_RADIUS + 0.11, 72, 72]}>
+        <group>
+          <Sphere args={[SURFACE_RADIUS + 0.22, 96, 96]}>
+            <meshBasicMaterial
+              color="#67e8f9"
+              transparent
+              opacity={0.05}
+              side={DoubleSide}
+            />
+          </Sphere>
+
+          <Sphere args={[SURFACE_RADIUS + 0.3, 96, 96]}>
             <meshBasicMaterial
               color="#dbeafe"
               transparent
-              opacity={0.04}
-              wireframe
+              opacity={0.018}
+              side={DoubleSide}
             />
           </Sphere>
         </group>
-
-        <Sphere args={[SURFACE_RADIUS + 0.28, 72, 72]}>
-          <meshBasicMaterial
-            color="#67e8f9"
-            transparent
-            opacity={0.08}
-            side={DoubleSide}
-          />
-        </Sphere>
 
         {flora.map((item) => (
           <Marker
@@ -226,8 +263,28 @@ function Marker({
   return (
     <group position={position} quaternion={quaternion}>
       <group ref={markerRef}>
+        <mesh position={[0, 0.012, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.07, 0.14, 32]} />
+          <meshBasicMaterial
+            color={palette.accent}
+            transparent
+            opacity={active || hovered ? 0.85 : 0.5}
+            side={DoubleSide}
+          />
+        </mesh>
+
+        <mesh position={[0, 0.005, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[0.08, 32]} />
+          <meshBasicMaterial
+            color={palette.glow}
+            transparent
+            opacity={active ? 0.32 : 0.16}
+            side={DoubleSide}
+          />
+        </mesh>
+
         <mesh position={[0, MARKER_HEIGHT / 2, 0]}>
-          <cylinderGeometry args={[0.012, 0.02, MARKER_HEIGHT, 16]} />
+          <cylinderGeometry args={[0.016, 0.022, MARKER_HEIGHT, 14]} />
           <meshStandardMaterial
             color={palette.accent}
             emissive={palette.glow}
@@ -235,28 +292,7 @@ function Marker({
           />
         </mesh>
 
-        <mesh
-          position={[0, MARKER_HEIGHT + 0.05, 0]}
-          onClick={(event) => {
-            event.stopPropagation();
-            onSelect();
-          }}
-          onPointerOver={(event) => {
-            event.stopPropagation();
-            handlePointerOver();
-          }}
-          onPointerOut={(event) => {
-            event.stopPropagation();
-            handlePointerOut();
-          }}
-        >
-          <sphereGeometry args={[0.075, 24, 24]} />
-          <meshStandardMaterial
-            color={palette.accentSoft}
-            emissive={palette.glow}
-            emissiveIntensity={active ? 3 : 2}
-          />
-        </mesh>
+        <FloraBloom flora={flora} active={active} hovered={hovered} />
 
         <mesh
           position={[0, MARKER_HEIGHT + 0.05, 0]}
@@ -291,6 +327,146 @@ function Marker({
         </mesh>
       </group>
     </group>
+  );
+}
+
+function FloraBloom({
+  flora,
+  active,
+  hovered,
+}: {
+  flora: FloraPreview;
+  active: boolean;
+  hovered: boolean;
+}) {
+  const palette = getFloraPalette(flora);
+  const bloomOpacity = active ? 1 : hovered ? 0.92 : 0.84;
+  const bloomScale = active ? 1.18 : hovered ? 1.08 : 1;
+  const topY = MARKER_HEIGHT + 0.065;
+
+  if (flora.floraType === "Tree" || flora.floraType === "Palm") {
+    return (
+      <group position={[0, topY, 0]} scale={bloomScale}>
+        <mesh position={[0, 0.07, 0]}>
+          <sphereGeometry args={[0.12, 18, 18]} />
+          <meshStandardMaterial
+            color={palette.accentSoft}
+            emissive={palette.glow}
+            emissiveIntensity={1.9 * bloomOpacity}
+          />
+        </mesh>
+        <mesh position={[0.08, 0.02, 0.04]} scale={[0.75, 0.75, 0.75]}>
+          <sphereGeometry args={[0.1, 16, 16]} />
+          <meshStandardMaterial
+            color={palette.accent}
+            emissive={palette.glow}
+            emissiveIntensity={1.4 * bloomOpacity}
+          />
+        </mesh>
+        <mesh position={[-0.07, 0.01, -0.03]} scale={[0.72, 0.72, 0.72]}>
+          <sphereGeometry args={[0.1, 16, 16]} />
+          <meshStandardMaterial
+            color={palette.accent}
+            emissive={palette.glow}
+            emissiveIntensity={1.4 * bloomOpacity}
+          />
+        </mesh>
+      </group>
+    );
+  }
+
+  if (flora.floraType === "Aquatic") {
+    return (
+      <group position={[0, topY - 0.02, 0]} scale={bloomScale}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[0.16, 28]} />
+          <meshStandardMaterial
+            color="#7dd3fc"
+            emissive={palette.glow}
+            emissiveIntensity={0.7 * bloomOpacity}
+          />
+        </mesh>
+        <PetalCluster palette={palette} opacity={bloomOpacity} />
+      </group>
+    );
+  }
+
+  if (flora.floraType === "Fern" || flora.floraType === "Succulent") {
+    return (
+      <group position={[0, topY, 0]} scale={bloomScale}>
+        {[
+          [0, 0, 0],
+          [0.07, 0.02, 0.04],
+          [-0.07, 0.02, -0.04],
+          [0.05, 0.03, -0.06],
+          [-0.05, 0.03, 0.06],
+        ].map((offset, index) => (
+          <mesh
+            key={`${flora.slug}-cluster-${index}`}
+            position={offset as [number, number, number]}
+            scale={
+              flora.floraType === "Fern"
+                ? [0.38, 1.15, 0.22]
+                : [0.48, 0.72, 0.48]
+            }
+          >
+            <sphereGeometry args={[0.08, 16, 16]} />
+            <meshStandardMaterial
+              color={index % 2 === 0 ? palette.accentSoft : palette.accent}
+              emissive={palette.glow}
+              emissiveIntensity={1.35 * bloomOpacity}
+            />
+          </mesh>
+        ))}
+      </group>
+    );
+  }
+
+  return (
+    <group position={[0, topY, 0]} scale={bloomScale}>
+      <PetalCluster palette={palette} opacity={bloomOpacity} />
+    </group>
+  );
+}
+
+function PetalCluster({
+  palette,
+  opacity,
+}: {
+  palette: ReturnType<typeof getFloraPalette>;
+  opacity: number;
+}) {
+  return (
+    <>
+      {[
+        [0, 0.08, 0],
+        [0.085, 0.03, 0.015],
+        [-0.08, 0.03, -0.015],
+        [0.02, 0.03, 0.082],
+        [-0.02, 0.03, -0.082],
+      ].map((offset, index) => (
+        <mesh
+          key={`petal-${index}`}
+          position={offset as [number, number, number]}
+          scale={[0.82, 1.08, 0.62]}
+        >
+          <sphereGeometry args={[0.07, 16, 16]} />
+          <meshStandardMaterial
+            color={index === 0 ? palette.accentSoft : palette.accent}
+            emissive={palette.glow}
+            emissiveIntensity={(index === 0 ? 2.3 : 1.5) * opacity}
+          />
+        </mesh>
+      ))}
+      <mesh position={[0, 0.04, 0]}>
+        <sphereGeometry args={[0.06, 16, 16]} />
+        <meshStandardMaterial
+          color="#ffffff"
+          emissive={palette.glow}
+          emissiveIntensity={1.55 * opacity}
+        />
+      </mesh>
+    </>
   );
 }
 

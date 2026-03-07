@@ -37,6 +37,10 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
   const [activeBiome, setActiveBiome] = useState("all");
   const [activeRegion, setActiveRegion] = useState("all");
   const [activeContinent, setActiveContinent] = useState("all");
+  const [activeFloraType, setActiveFloraType] = useState("all");
+  const [activeSeasonality, setActiveSeasonality] = useState("all");
+  const [activeOrigin, setActiveOrigin] = useState("all");
+  const [activeStatus, setActiveStatus] = useState("all");
   const selectedSlug = useExploreStore((state) => state.selectedSlug);
   const setSelectedSlug = useExploreStore((state) => state.setSelectedSlug);
 
@@ -95,14 +99,117 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
     [flora],
   );
 
+  const floraTypeFilters = useMemo(
+    () => [
+      { label: "All flora types", value: "all" },
+      ...Array.from(new Set(flora.map((item) => item.floraType)))
+        .sort((left, right) => left.localeCompare(right))
+        .map((floraType) => ({
+          label: floraType,
+          value: floraType,
+        })),
+    ],
+    [flora],
+  );
+
+  const seasonalityFilters = useMemo(() => {
+    const orderedOptions = [
+      "Spring",
+      "Summer",
+      "Autumn",
+      "Winter",
+      "Year-round",
+      "Non-flowering",
+    ];
+
+    return [
+      { label: "All seasonality", value: "all" },
+      ...orderedOptions
+        .filter((season) =>
+          flora.some(
+            (item) =>
+              item.bloomWindows.includes(season) ||
+              (season === "Year-round" && item.bloomSeason === "Year-round") ||
+              (season === "Non-flowering" && item.bloomSeason === "Non-flowering fern"),
+          ),
+        )
+        .map((season) => ({
+          label: season,
+          value: season,
+        })),
+    ];
+  }, [flora]);
+
+  const originFilters = useMemo(
+    () => [
+      { label: "All origins", value: "all" },
+      { label: "Native", value: "native" },
+      { label: "Endemic", value: "endemic" },
+      { label: "Introduced", value: "introduced" },
+    ],
+    [],
+  );
+
+  const statusFilters = useMemo(
+    () => [
+      { label: "All statuses", value: "all" },
+      ...Array.from(
+        new Set(
+          flora
+            .map((item) => item.conservationStatus)
+            .filter((status): status is string => Boolean(status)),
+        ),
+      )
+        .sort((left, right) => left.localeCompare(right))
+        .map((status) => ({
+          label: status,
+          value: status,
+        })),
+    ],
+    [flora],
+  );
+
   const filteredFlora = useMemo(() => {
     return filterFloraCollection(flora, {
       query,
       biome: activeBiome,
       region: activeRegion,
       continent: activeContinent,
+      floraType: activeFloraType,
+      season: activeSeasonality,
+      origin: activeOrigin,
+      status: activeStatus,
     });
-  }, [activeBiome, activeContinent, activeRegion, flora, query]);
+  }, [
+    activeBiome,
+    activeContinent,
+    activeFloraType,
+    activeOrigin,
+    activeRegion,
+    activeSeasonality,
+    activeStatus,
+    flora,
+    query,
+  ]);
+
+  const visibleContinentCount = useMemo(() => {
+    return new Set(
+      filteredFlora
+        .map((item) => item.primaryContinent?.slug)
+        .filter((slug): slug is string => Boolean(slug)),
+    ).size;
+  }, [filteredFlora]);
+
+  const activeFilterCount = [
+    query.trim(),
+    activeBiome !== "all" ? activeBiome : "",
+    activeRegion !== "all" ? activeRegion : "",
+    activeContinent !== "all" ? activeContinent : "",
+    activeFloraType !== "all" ? activeFloraType : "",
+    activeSeasonality !== "all" ? activeSeasonality : "",
+    activeOrigin !== "all" ? activeOrigin : "",
+    activeStatus !== "all" ? activeStatus : "",
+  ].filter(Boolean).length;
 
   useEffect(() => {
     if (!filteredFlora.length) {
@@ -120,6 +227,17 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
   const selectedFlora =
     filteredFlora.find((item) => item.slug === selectedSlug) ?? filteredFlora[0] ?? null;
 
+  const resetFilters = () => {
+    setQuery("");
+    setActiveBiome("all");
+    setActiveRegion("all");
+    setActiveContinent("all");
+    setActiveFloraType("all");
+    setActiveSeasonality("all");
+    setActiveOrigin("all");
+    setActiveStatus("all");
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#02040a] text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(74,222,128,0.14),_transparent_28%),radial-gradient(circle_at_75%_15%,_rgba(96,165,250,0.18),_transparent_24%),radial-gradient(circle_at_50%_120%,_rgba(236,72,153,0.12),_transparent_28%)]" />
@@ -129,68 +247,109 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
         <SiteHeader />
       </div>
 
-      <main className="relative z-10 grid gap-10 px-4 pb-8 md:px-6 lg:min-h-[calc(100vh-6rem)] lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] xl:px-8">
+      <main className="relative z-10 grid gap-10 px-4 pb-8 md:px-6 lg:min-h-[calc(100vh-6rem)] lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)] xl:px-8">
         <section className="flex flex-col justify-center gap-8 py-4 lg:py-10">
           <div className="space-y-5">
             <p className="text-xs uppercase tracking-[0.45em] text-emerald-200/72">
-              Cinematic botanical atlas
+              Geographic botanical atlas
             </p>
             <h1 className="max-w-3xl font-display text-6xl leading-none text-white sm:text-7xl">
-              A living globe for wandering through the world&apos;s flora.
+              Explore flora on a real Earth, not an abstract sphere.
             </h1>
             <p className="max-w-2xl text-base leading-8 text-white/68 sm:text-lg">
-              Rotate a luminous Earth, discover curated botanical stories, and
-              open elegant field notes for plants rooted in the Amazon, the
-              Mediterranean, and Japan.
+              Rotate a geographic globe, browse living plant clusters rooted in
+              real regions, and narrow the collection by seasonality, flora
+              type, biome, origin, and conservation status.
             </p>
           </div>
 
           <div className="grid gap-4 rounded-[2rem] border border-white/10 bg-white/6 p-4 backdrop-blur-xl sm:grid-cols-[minmax(0,1fr)_auto]">
             <label className="block">
               <span className="mb-2 block text-xs uppercase tracking-[0.28em] text-white/40">
-                Search flora, region, or biome
+                Search flora, region, biome, or scientific name
               </span>
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Try cherry blossom, Amazon, Mediterranean..."
+                placeholder="Try cherry blossom, Amazon, lavender, maple..."
                 className="w-full rounded-full border border-white/10 bg-slate-950/70 px-5 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/45"
               />
             </label>
 
-            <div className="grid grid-cols-2 gap-3 sm:min-w-[15rem]">
-              <StatCard value={`${flora.length}`} label="Seeded flora" />
-              <StatCard
-                value={`${new Set(flora.map((item) => item.primaryRegion?.slug)).size}`}
-                label="Regions"
+            <div className="grid grid-cols-2 gap-3 sm:min-w-[16rem]">
+              <StatCard value={`${filteredFlora.length}`} label="Visible flora" />
+              <StatCard value={`${visibleContinentCount}`} label="Continents" />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <FilterSelect
+                label="Continent"
+                options={continentFilters}
+                value={activeContinent}
+                onChange={setActiveContinent}
+              />
+              <FilterSelect
+                label="Region"
+                options={regionFilters}
+                value={activeRegion}
+                onChange={setActiveRegion}
+              />
+              <FilterSelect
+                label="Biome"
+                options={biomeFilters}
+                value={activeBiome}
+                onChange={setActiveBiome}
+              />
+              <FilterSelect
+                label="Flora type"
+                options={floraTypeFilters}
+                value={activeFloraType}
+                onChange={setActiveFloraType}
+              />
+              <FilterSelect
+                label="Seasonality"
+                options={seasonalityFilters}
+                value={activeSeasonality}
+                onChange={setActiveSeasonality}
+              />
+              <FilterSelect
+                label="Origin"
+                options={originFilters}
+                value={activeOrigin}
+                onChange={setActiveOrigin}
+              />
+              <FilterSelect
+                label="Conservation"
+                options={statusFilters}
+                value={activeStatus}
+                onChange={setActiveStatus}
               />
             </div>
 
-            <FilterRow
-              label="Biome"
-              options={biomeFilters}
-              activeValue={activeBiome}
-              onSelect={setActiveBiome}
-            />
-            <FilterRow
-              label="Continent"
-              options={continentFilters}
-              activeValue={activeContinent}
-              onSelect={setActiveContinent}
-            />
-            <FilterRow
-              label="Region"
-              options={regionFilters}
-              activeValue={activeRegion}
-              onSelect={setActiveRegion}
-            />
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.4rem] border border-white/8 bg-black/18 px-4 py-3">
+              <div className="flex flex-wrap gap-2 text-[0.68rem] uppercase tracking-[0.22em] text-white/48">
+                <span className="rounded-full border border-white/10 px-3 py-1">
+                  {flora.length} total flora
+                </span>
+                <span className="rounded-full border border-white/10 px-3 py-1">
+                  {activeFilterCount} active filters
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="rounded-full border border-white/10 px-4 py-2 text-xs uppercase tracking-[0.22em] text-white/70 transition hover:border-white/20 hover:text-white"
+              >
+                Reset filters
+              </button>
+            </div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
             {[
-              "Subtle motion and atmospheric glow make the homepage feel alive.",
-              "Every marker opens a botanical preview with memorable facts.",
-              "Detail pages translate exploration into richer educational stories.",
+              "Geographic land and ocean layers anchor each flora cluster to a recognizable place.",
+              "Seasonality, flora type, origin, and conservation filters all update the globe instantly.",
+              "Selecting any bloom on Earth opens a richer botanical preview and detail route.",
             ].map((item) => (
               <div
                 key={item}
@@ -205,17 +364,17 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.35em] text-white/38">
-                  Featured flora
+                  Live globe collection
                 </p>
                 <h2 className="mt-2 font-display text-3xl text-white">
-                  Curated entries from the first build
+                  Flora matching the current Earth filters
                 </h2>
               </div>
               <Link
                 href="/flora"
                 className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/72 transition hover:border-white/20 hover:text-white"
               >
-                Open flora index
+                Open full flora index
               </Link>
             </div>
 
@@ -243,11 +402,16 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
                       }}
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <span className="rounded-full border border-white/10 px-3 py-1 text-[0.7rem] uppercase tracking-[0.24em] text-white/58">
-                          {item.primaryRegion?.name ?? "Featured"}
-                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="rounded-full border border-white/10 px-3 py-1 text-[0.7rem] uppercase tracking-[0.24em] text-white/58">
+                            {item.primaryRegion?.name ?? "Global selection"}
+                          </span>
+                          <span className="rounded-full border border-white/10 px-3 py-1 text-[0.7rem] uppercase tracking-[0.24em] text-white/58">
+                            {item.floraType}
+                          </span>
+                        </div>
                         <span className="text-xs text-white/42">
-                          {item.biomes[0]?.name ?? "Curated flora"}
+                          {item.biomes[0]?.name ?? "Botanical story"}
                         </span>
                       </div>
                       <h3 className="mt-5 font-display text-3xl text-white">
@@ -259,13 +423,25 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
                       <p className="mt-4 text-sm leading-7 text-white/72">
                         {item.shortDescription}
                       </p>
+                      <div className="mt-4 flex flex-wrap gap-2 text-[0.68rem] uppercase tracking-[0.22em] text-white/50">
+                        {item.bloomWindows[0] ? (
+                          <span className="rounded-full border border-white/10 px-3 py-1">
+                            {item.bloomWindows.join(" / ")}
+                          </span>
+                        ) : null}
+                        {item.conservationStatus ? (
+                          <span className="rounded-full border border-white/10 px-3 py-1">
+                            {item.conservationStatus}
+                          </span>
+                        ) : null}
+                      </div>
                     </motion.button>
                   );
                 })
               ) : (
                 <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-6 text-sm leading-7 text-white/68 xl:col-span-3">
                   No flora match the current search and filter combination. Try
-                  clearing a filter to reveal more of the current collection.
+                  clearing a filter to reveal more of the collection.
                 </div>
               )}
             </div>
@@ -278,7 +454,7 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
                   Featured regions
                 </p>
                 <h2 className="mt-2 font-display text-3xl text-white">
-                  Places to keep exploring after the globe
+                  Geography to open after the globe
                 </h2>
               </div>
               <Link
@@ -321,6 +497,12 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
         <section className="relative flex min-h-[32rem] items-stretch py-2 lg:min-h-[calc(100vh-10rem)] lg:py-8">
           <div className="absolute inset-0 rounded-[2.2rem] border border-white/8 bg-white/4 backdrop-blur-[1px]" />
           <div className="relative flex-1 overflow-hidden rounded-[2.2rem]">
+            <GlobeHud
+              flora={filteredFlora}
+              query={query}
+              activeSeasonality={activeSeasonality}
+              activeFloraType={activeFloraType}
+            />
             <InteractiveGlobe flora={filteredFlora} />
             <SelectionDrawer flora={selectedFlora} />
           </div>
@@ -341,39 +523,85 @@ function StatCard({ value, label }: { value: string; label: string }) {
   );
 }
 
-function FilterRow({
+function FilterSelect({
   label,
   options,
-  activeValue,
-  onSelect,
+  value,
+  onChange,
 }: {
   label: string;
   options: Array<{
     label: string;
     value: string;
   }>;
-  activeValue: string;
-  onSelect: (value: string) => void;
+  value: string;
+  onChange: (value: string) => void;
 }) {
   return (
-    <div>
-      <p className="mb-3 text-xs uppercase tracking-[0.28em] text-white/40">{label}</p>
-      <div className="flex flex-wrap gap-2">
+    <label className="block">
+      <span className="mb-2 block text-xs uppercase tracking-[0.28em] text-white/40">
+        {label}
+      </span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-[1rem] border border-white/10 bg-slate-950/76 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-300/45"
+      >
         {options.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => onSelect(option.value)}
-            className={`rounded-full border px-3 py-2 text-xs uppercase tracking-[0.18em] transition ${
-              activeValue === option.value
-                ? "border-cyan-300/55 bg-cyan-300/12 text-cyan-100"
-                : "border-white/10 bg-black/15 text-white/58 hover:border-white/18 hover:text-white"
-            }`}
-          >
+          <option key={option.value} value={option.value} className="bg-slate-950">
             {option.label}
-          </button>
+          </option>
         ))}
+      </select>
+    </label>
+  );
+}
+
+function GlobeHud({
+  flora,
+  query,
+  activeSeasonality,
+  activeFloraType,
+}: {
+  flora: FloraPreview[];
+  query: string;
+  activeSeasonality: string;
+  activeFloraType: string;
+}) {
+  return (
+    <>
+      <div className="pointer-events-none absolute left-4 top-4 z-10 max-w-[20rem] rounded-[1.6rem] border border-white/10 bg-slate-950/60 p-4 backdrop-blur-xl">
+        <p className="text-[0.65rem] uppercase tracking-[0.34em] text-cyan-100/65">
+          Earth flora atlas
+        </p>
+        <h2 className="mt-3 font-display text-3xl text-white">
+          {flora.length} flora visible
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-white/62">
+          Geographic landmasses, atmospheric glow, and botanical clusters update
+          together as filters change.
+        </p>
       </div>
+
+      <div className="pointer-events-none absolute bottom-4 left-4 z-10 flex max-w-[30rem] flex-wrap gap-2">
+        <HudChip label="Search" value={query.trim() || "All flora"} />
+        <HudChip
+          label="Seasonality"
+          value={activeSeasonality === "all" ? "Any" : activeSeasonality}
+        />
+        <HudChip
+          label="Flora type"
+          value={activeFloraType === "all" ? "Any" : activeFloraType}
+        />
+      </div>
+    </>
+  );
+}
+
+function HudChip({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-full border border-white/10 bg-slate-950/68 px-4 py-2 text-[0.68rem] uppercase tracking-[0.24em] text-white/62 backdrop-blur-lg">
+      <span className="text-white/38">{label}</span> {value}
     </div>
   );
 }
