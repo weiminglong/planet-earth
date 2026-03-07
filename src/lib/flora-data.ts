@@ -24,6 +24,16 @@ export type BiomeReference = {
   visualTheme: string | null;
 };
 
+export type FloraType =
+  | "Aquatic"
+  | "Bromeliad"
+  | "Fern"
+  | "Flower"
+  | "Palm"
+  | "Shrub"
+  | "Succulent"
+  | "Tree";
+
 export type FloraPreview = {
   id: string;
   slug: string;
@@ -39,6 +49,7 @@ export type FloraPreview = {
   species: string | null;
   featured: boolean;
   visualTheme: string | null;
+  floraType: FloraType;
   regions: RegionReference[];
   primaryRegion: RegionReference | null;
   continents: Array<{
@@ -87,6 +98,28 @@ const floraInclude = {
 type FloraResult = Prisma.FloraGetPayload<{
   include: typeof floraInclude;
 }>;
+
+const floraTypeBySlug: Partial<Record<string, FloraType>> = {
+  "acer-palmatum": "Tree",
+  "adansonia-grandidieri": "Tree",
+  "cinchona-officinalis": "Tree",
+  "cyathea-dealbata": "Fern",
+  "eucalyptus-regnans": "Tree",
+  "hevea-brasiliensis": "Tree",
+  "lavandula-angustifolia": "Shrub",
+  "leucadendron-argenteum": "Shrub",
+  "meconopsis-grandis": "Flower",
+  "olea-europaea": "Tree",
+  "protea-cynaroides": "Flower",
+  "prunus-serrulata": "Tree",
+  "puya-raimondii": "Bromeliad",
+  "ravenala-madagascariensis": "Palm",
+  "rhododendron-arboreum": "Tree",
+  "sophora-microphylla": "Tree",
+  "telopea-speciosissima": "Shrub",
+  "victoria-amazonica": "Aquatic",
+  "welwitschia-mirabilis": "Succulent",
+};
 
 async function fetchFloraRecords(where?: Prisma.FloraWhereInput) {
   return prisma.flora.findMany({
@@ -161,6 +194,47 @@ function buildBloomWindows(input?: string | null) {
   return [...windows];
 }
 
+function inferFloraType(record: FloraResult): FloraType {
+  const mappedType = floraTypeBySlug[record.slug];
+
+  if (mappedType) {
+    return mappedType;
+  }
+
+  const searchableText = [
+    record.commonName,
+    record.shortDescription,
+    record.longDescription,
+    record.family,
+    record.genus,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (searchableText.includes("fern")) {
+    return "Fern";
+  }
+
+  if (searchableText.includes("water") || searchableText.includes("aquatic")) {
+    return "Aquatic";
+  }
+
+  if (searchableText.includes("succulent")) {
+    return "Succulent";
+  }
+
+  if (searchableText.includes("shrub")) {
+    return "Shrub";
+  }
+
+  if (searchableText.includes("tree") || searchableText.includes("palm")) {
+    return "Tree";
+  }
+
+  return "Flower";
+}
+
 function mapFloraRecord(record: FloraResult): FloraPreview {
   const regions = record.regionOccurrences.map(({ region }) => ({
     name: region.name,
@@ -209,6 +283,7 @@ function mapFloraRecord(record: FloraResult): FloraPreview {
     species: record.species,
     featured: record.featured,
     visualTheme: biomes[0]?.visualTheme ?? null,
+    floraType: inferFloraType(record),
     regions,
     primaryRegion: regions[0] ?? null,
     continents,
