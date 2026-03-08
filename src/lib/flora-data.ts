@@ -1,5 +1,9 @@
 import { cache } from "react";
 import type { Prisma } from "@/generated/prisma/client";
+import {
+  buildFloraWhere,
+  type FloraQueryFilters,
+} from "@/lib/flora-query-filters";
 import { prisma } from "@/lib/prisma";
 
 export type RegionReference = {
@@ -133,7 +137,8 @@ async function fetchFloraRecords(where?: Prisma.FloraWhereInput) {
 
 function dedupeBySlug<T extends { slug: string }>(items: T[]) {
   return items.filter(
-    (item, index) => items.findIndex((candidate) => candidate.slug === item.slug) === index,
+    (item, index) =>
+      items.findIndex((candidate) => candidate.slug === item.slug) === index,
   );
 }
 
@@ -265,7 +270,9 @@ function mapFloraRecord(record: FloraResult): FloraPreview {
   const continents = dedupeBySlug(
     regions
       .map((region) => region.parentRegion)
-      .filter((region): region is NonNullable<typeof region> => Boolean(region)),
+      .filter((region): region is NonNullable<typeof region> =>
+        Boolean(region),
+      ),
   );
 
   return {
@@ -291,8 +298,12 @@ function mapFloraRecord(record: FloraResult): FloraPreview {
     biomes,
     facts: record.facts.map(({ fact }) => fact),
     culturalNotes: record.culturalNotes.map(({ note }) => note),
-    hasNativeOccurrence: record.regionOccurrences.some(({ isNative }) => isNative),
-    hasEndemicOccurrence: record.regionOccurrences.some(({ isEndemic }) => isEndemic),
+    hasNativeOccurrence: record.regionOccurrences.some(
+      ({ isNative }) => isNative,
+    ),
+    hasEndemicOccurrence: record.regionOccurrences.some(
+      ({ isEndemic }) => isEndemic,
+    ),
   };
 }
 
@@ -303,7 +314,9 @@ function buildRelatedFlora(source: FloraPreview, candidates: FloraPreview[]) {
       let score = 0;
 
       if (candidate.primaryRegion?.slug === source.primaryRegion?.slug) {
-        reasons.add(`Shared region: ${candidate.primaryRegion?.name ?? "Shared habitat"}`);
+        reasons.add(
+          `Shared region: ${candidate.primaryRegion?.name ?? "Shared habitat"}`,
+        );
         score += 6;
       }
 
@@ -371,7 +384,8 @@ function buildRelatedFlora(source: FloraPreview, candidates: FloraPreview[]) {
     .filter((candidate) => candidate.score > 0)
     .sort(
       (left, right) =>
-        right.score - left.score || left.commonName.localeCompare(right.commonName),
+        right.score - left.score ||
+        left.commonName.localeCompare(right.commonName),
     )
     .slice(0, 6);
 }
@@ -385,6 +399,11 @@ export const getAllFlora = cache(async () => {
   const records = await fetchFloraRecords();
   return records.map(mapFloraRecord);
 });
+
+export async function getFilteredFlora(filters: FloraQueryFilters = {}) {
+  const records = await fetchFloraRecords(buildFloraWhere(filters));
+  return records.map(mapFloraRecord);
+}
 
 export const getFloraBySlug = cache(async (slug: string) => {
   const record = await prisma.flora.findUnique({

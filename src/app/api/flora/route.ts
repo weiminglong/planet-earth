@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllFlora } from "@/lib/flora-data";
-import { filterFloraCollection } from "@/lib/flora-filters";
+import { getFilteredFlora } from "@/lib/flora-data";
 
 export async function GET(request: NextRequest) {
-  const flora = await getAllFlora();
   const searchParams = request.nextUrl.searchParams;
-
-  const filtered = filterFloraCollection(flora, {
+  const flora = await getFilteredFlora({
     query: searchParams.get("q"),
     biome: searchParams.get("biome"),
     region: searchParams.get("region"),
@@ -16,5 +13,5 @@ export async function GET(request: NextRequest) {
     origin: searchParams.get("origin"),
   });
 
-  return NextResponse.json(filtered);
+  return NextResponse.json(flora);
 }

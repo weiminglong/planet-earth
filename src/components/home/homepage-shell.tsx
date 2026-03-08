@@ -53,7 +53,9 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
         .flatMap((item) => item.biomes)
         .filter(
           (biome, index, collection) =>
-            collection.findIndex((candidate) => candidate.slug === biome.slug) === index,
+            collection.findIndex(
+              (candidate) => candidate.slug === biome.slug,
+            ) === index,
         )
         .sort((left, right) => left.name.localeCompare(right.name))
         .map((biome) => ({
@@ -69,10 +71,14 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
       { label: "All regions", value: "all" },
       ...flora
         .map((item) => item.primaryRegion)
-        .filter((region): region is NonNullable<typeof region> => Boolean(region))
+        .filter((region): region is NonNullable<typeof region> =>
+          Boolean(region),
+        )
         .filter(
           (region, index, collection) =>
-            collection.findIndex((candidate) => candidate.slug === region.slug) === index,
+            collection.findIndex(
+              (candidate) => candidate.slug === region.slug,
+            ) === index,
         )
         .sort((left, right) => left.name.localeCompare(right.name))
         .map((region) => ({
@@ -90,7 +96,9 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
         .flatMap((item) => item.continents)
         .filter(
           (continent, index, collection) =>
-            collection.findIndex((candidate) => candidate.slug === continent.slug) === index,
+            collection.findIndex(
+              (candidate) => candidate.slug === continent.slug,
+            ) === index,
         )
         .sort((left, right) => left.name.localeCompare(right.name))
         .map((continent) => ({
@@ -132,7 +140,8 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
             (item) =>
               item.bloomWindows.includes(season) ||
               (season === "Year-round" && item.bloomSeason === "Year-round") ||
-              (season === "Non-flowering" && item.bloomSeason === "Non-flowering fern"),
+              (season === "Non-flowering" &&
+                item.bloomSeason === "Non-flowering fern"),
           ),
         )
         .map((season) => ({
@@ -221,13 +230,18 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
       return;
     }
 
-    if (!selectedSlug || !filteredFlora.some((item) => item.slug === selectedSlug)) {
+    if (
+      !selectedSlug ||
+      !filteredFlora.some((item) => item.slug === selectedSlug)
+    ) {
       setSelectedSlug(filteredFlora[0].slug);
     }
   }, [filteredFlora, selectedSlug, setSelectedSlug]);
 
   const selectedFlora =
-    filteredFlora.find((item) => item.slug === selectedSlug) ?? filteredFlora[0] ?? null;
+    filteredFlora.find((item) => item.slug === selectedSlug) ??
+    filteredFlora[0] ??
+    null;
 
   const resetFilters = () => {
     setQuery("");
@@ -279,7 +293,10 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
             </label>
 
             <div className="grid grid-cols-2 gap-3 sm:min-w-[16rem]">
-              <StatCard value={`${filteredFlora.length}`} label="Visible flora" />
+              <StatCard
+                value={`${filteredFlora.length}`}
+                label="Visible flora"
+              />
               <StatCard value={`${visibleContinentCount}`} label="Continents" />
             </div>
 
@@ -397,7 +414,9 @@ export function HomepageShell({ flora, regions }: HomepageShellProps) {
                       className="group rounded-[1.75rem] border p-5 text-left transition hover:-translate-y-1"
                       style={{
                         background: `linear-gradient(160deg, ${palette.surface}, rgba(15, 23, 42, 0.58))`,
-                        borderColor: isSelected ? palette.border : "rgba(255,255,255,0.08)",
+                        borderColor: isSelected
+                          ? palette.border
+                          : "rgba(255,255,255,0.08)",
                         boxShadow: isSelected
                           ? `0 20px 60px -34px ${palette.glow}`
                           : "none",
@@ -552,7 +571,11 @@ function FilterSelect({
         className="w-full rounded-[1rem] border border-white/10 bg-slate-950/76 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-300/45"
       >
         {options.map((option) => (
-          <option key={option.value} value={option.value} className="bg-slate-950">
+          <option
+            key={option.value}
+            value={option.value}
+            className="bg-slate-950"
+          >
             {option.label}
           </option>
         ))}

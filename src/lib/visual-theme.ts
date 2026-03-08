@@ -93,11 +93,17 @@ export function getFloraPalette(flora: {
     return palettes["blush-spring"];
   }
 
-  if (flora.slug.includes("olea") || flora.primaryRegion?.slug === "mediterranean-region") {
+  if (
+    flora.slug.includes("olea") ||
+    flora.primaryRegion?.slug === "mediterranean-region"
+  ) {
     return palettes["golden-warm"];
   }
 
-  if (flora.slug.includes("victoria") || flora.primaryRegion?.slug === "amazon-basin") {
+  if (
+    flora.slug.includes("victoria") ||
+    flora.primaryRegion?.slug === "amazon-basin"
+  ) {
     return palettes["lush-green"];
   }
 

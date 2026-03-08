@@ -49,7 +49,9 @@ export function filterFloraCollection<T extends FloraFilterable>(
       normalizedQuery.length === 0 ||
       matchesText(item.commonName, normalizedQuery) ||
       matchesText(item.scientificName, normalizedQuery) ||
-      item.regions.some((region) => matchesText(region.name, normalizedQuery)) ||
+      item.regions.some((region) =>
+        matchesText(region.name, normalizedQuery),
+      ) ||
       item.biomes.some((biome) => matchesText(biome.name, normalizedQuery));
 
     const matchesBiome =

@@ -2,11 +2,21 @@
   "name": "living-flora-globe",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24 <26"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:smoke": "playwright test",
+    "test:ci": "npm run test && npm run test:smoke",
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
@@ -15,27 +25,30 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "dotenv": "^17.3.1",
-    "framer-motion": "^12.35.0",
+    "framer-motion": "^12.35.1",
     "next": "16.1.6",
     "pg": "^8.20.0",
     "prisma": "^7.4.2",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "three": "^0.183.2",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.18.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.183.1",
-    "eslint": "^9",
+    "eslint": "^9.39.4",
     "eslint-config-next": "16.1.6",
     "prettier": "^3.8.1",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.0.18"
   }
 }

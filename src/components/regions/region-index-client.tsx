@@ -18,10 +18,14 @@ export function RegionIndexClient({ regions }: RegionIndexClientProps) {
       { label: "All continents", value: "all" },
       ...regions
         .map((region) => region.parentRegion)
-        .filter((region): region is NonNullable<typeof region> => Boolean(region))
+        .filter((region): region is NonNullable<typeof region> =>
+          Boolean(region),
+        )
         .filter(
           (region, index, collection) =>
-            collection.findIndex((candidate) => candidate.slug === region.slug) === index,
+            collection.findIndex(
+              (candidate) => candidate.slug === region.slug,
+            ) === index,
         )
         .sort((left, right) => left.name.localeCompare(right.name))
         .map((region) => ({
@@ -61,7 +65,8 @@ export function RegionIndexClient({ regions }: RegionIndexClientProps) {
         continent === "all" || region.parentRegion?.slug === continent;
 
       const matchesBiome =
-        biome === "all" || region.biomeNames.some((biomeName) => biomeName === biome);
+        biome === "all" ||
+        region.biomeNames.some((biomeName) => biomeName === biome);
 
       return matchesQuery && matchesContinent && matchesBiome;
     });
@@ -114,11 +119,18 @@ export function RegionIndexClient({ regions }: RegionIndexClientProps) {
               </span>
             </div>
 
-            <h2 className="mt-5 font-display text-4xl text-white">{region.name}</h2>
-            <p className="mt-4 text-sm leading-7 text-white/72">{region.summary}</p>
+            <h2 className="mt-5 font-display text-4xl text-white">
+              {region.name}
+            </h2>
+            <p className="mt-4 text-sm leading-7 text-white/72">
+              {region.summary}
+            </p>
 
             <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
-              <StatCard label="Flora stories" value={String(region.floraCount)} />
+              <StatCard
+                label="Flora stories"
+                value={String(region.floraCount)}
+              />
               <StatCard
                 label="Endemic highlights"
                 value={String(region.endemicFloraCount)}

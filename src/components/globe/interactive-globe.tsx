@@ -114,7 +114,15 @@ function SceneChrome({ mapMode }: { mapMode: GlobeMapMode }) {
           mapMode === "map" ? 1.08 : 0.9,
         ]}
       />
-      <Stars radius={80} depth={30} count={4200} factor={4} saturation={0} fade speed={0.35} />
+      <Stars
+        radius={80}
+        depth={30}
+        count={4200}
+        factor={4}
+        saturation={0}
+        fade
+        speed={0.35}
+      />
     </>
   );
 }
@@ -168,7 +176,9 @@ function Scene({ flora, mapMode }: InteractiveGlobeProps) {
 
     return createAppleMapTexture(
       dayTexture.image,
-      hasTextureImageSource(normalTexture.image) ? normalTexture.image : undefined,
+      hasTextureImageSource(normalTexture.image)
+        ? normalTexture.image
+        : undefined,
     );
   }, [dayTexture.image, normalTexture.image]);
 
@@ -187,8 +197,8 @@ function Scene({ flora, mapMode }: InteractiveGlobeProps) {
 
   const activeSurfaceTexture =
     mapMode === "map"
-      ? appleMapTexture ?? modernDayTexture ?? dayTexture
-      : modernDayTexture ?? dayTexture;
+      ? (appleMapTexture ?? modernDayTexture ?? dayTexture)
+      : (modernDayTexture ?? dayTexture);
 
   useFrame((state, delta) => {
     if (!globeRef.current || !cloudRef.current) {
@@ -224,7 +234,8 @@ function Scene({ flora, mapMode }: InteractiveGlobeProps) {
     );
 
     cloudRef.current.rotation.y += delta * 0.018;
-    cloudRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.12) * 0.04;
+    cloudRef.current.rotation.z =
+      Math.sin(state.clock.elapsedTime * 0.12) * 0.04;
   });
 
   return (
@@ -236,7 +247,9 @@ function Scene({ flora, mapMode }: InteractiveGlobeProps) {
               map={activeSurfaceTexture}
               normalMap={normalTexture}
               normalScale={
-                mapMode === "map" ? new Vector2(0.18, 0.18) : new Vector2(0.58, 0.58)
+                mapMode === "map"
+                  ? new Vector2(0.18, 0.18)
+                  : new Vector2(0.58, 0.58)
               }
               roughness={mapMode === "map" ? 0.95 : 0.9}
               metalness={0.02}
@@ -345,7 +358,11 @@ function Marker({
     return latLngToVector3(region?.lat ?? 0, region?.lng ?? 0, SURFACE_RADIUS);
   }, [flora.primaryRegion]);
   const quaternion = useMemo(
-    () => new Quaternion().setFromUnitVectors(UP_VECTOR, position.clone().normalize()),
+    () =>
+      new Quaternion().setFromUnitVectors(
+        UP_VECTOR,
+        position.clone().normalize(),
+      ),
     [position],
   );
 
@@ -619,7 +636,9 @@ function NoWebGlFallback({ flora }: GlobeFloraProps) {
               <h3 className="mt-4 font-display text-3xl text-white">
                 {item.commonName}
               </h3>
-              <p className="mt-2 text-sm text-white/62">{item.scientificName}</p>
+              <p className="mt-2 text-sm text-white/62">
+                {item.scientificName}
+              </p>
             </Link>
           );
         })}
@@ -639,8 +658,16 @@ function latLngToVector3(lat: number, lng: number, radius: number) {
   );
 }
 
-function dampAngle(current: number, target: number, lambda: number, delta: number) {
-  const difference = Math.atan2(Math.sin(target - current), Math.cos(target - current));
+function dampAngle(
+  current: number,
+  target: number,
+  lambda: number,
+  delta: number,
+) {
+  const difference = Math.atan2(
+    Math.sin(target - current),
+    Math.cos(target - current),
+  );
   return current + difference * (1 - Math.exp(-lambda * delta));
 }
 
@@ -649,6 +676,6 @@ function detectWebGlSupport() {
 
   return Boolean(
     window.WebGLRenderingContext &&
-      (canvas.getContext("webgl") || canvas.getContext("experimental-webgl")),
+    (canvas.getContext("webgl") || canvas.getContext("experimental-webgl")),
   );
 }

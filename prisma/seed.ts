@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
@@ -54,7 +55,8 @@ const biomes: SeedBiome[] = [
     slug: "tropical-rainforest",
     description:
       "Warm, wet forests near the equator with year-round growth and exceptional biodiversity.",
-    climateProfile: "Hot and humid year-round, typically 2000-10000mm annual rainfall",
+    climateProfile:
+      "Hot and humid year-round, typically 2000-10000mm annual rainfall",
     visualTheme: "lush-green",
   },
   {
@@ -62,7 +64,8 @@ const biomes: SeedBiome[] = [
     slug: "wetland",
     description:
       "Flooded or seasonally saturated landscapes that support floating, rooted, and moisture-loving plants.",
-    climateProfile: "Standing or slow-moving water, frequent flooding, nutrient-rich soils",
+    climateProfile:
+      "Standing or slow-moving water, frequent flooding, nutrient-rich soils",
     visualTheme: "teal-wetland",
   },
   {
@@ -94,7 +97,8 @@ const biomes: SeedBiome[] = [
     slug: "alpine",
     description:
       "High-elevation landscapes with intense sunlight, cold nights, and short, brilliant growing seasons.",
-    climateProfile: "Thin air, cold temperatures, snowmelt-fed moisture, rocky soils",
+    climateProfile:
+      "Thin air, cold temperatures, snowmelt-fed moisture, rocky soils",
     visualTheme: "crimson-alpine",
   },
   {
@@ -102,7 +106,8 @@ const biomes: SeedBiome[] = [
     slug: "fynbos-shrubland",
     description:
       "A fire-adapted South African shrubland famed for proteas, restios, and extraordinarily high endemism.",
-    climateProfile: "Winter rainfall, dry summers, nutrient-poor soils, periodic fire",
+    climateProfile:
+      "Winter rainfall, dry summers, nutrient-poor soils, periodic fire",
     visualTheme: "sunset-fynbos",
   },
   {
@@ -118,7 +123,8 @@ const biomes: SeedBiome[] = [
     slug: "desert-steppe",
     description:
       "Arid open landscapes where ancient, highly specialized plants survive on fog, dew, and infrequent rain.",
-    climateProfile: "Extremely low rainfall, intense sun, large day-night temperature swings",
+    climateProfile:
+      "Extremely low rainfall, intense sun, large day-night temperature swings",
     visualTheme: "earth-desert",
   },
 ];
@@ -132,7 +138,8 @@ const continents: SeedRegion[] = [
     lng: -60,
     summary:
       "A continent of rainforests, Andes summits, wetlands, and botanical lineages shaped by altitude and water.",
-    climateNotes: "Tropical, temperate, alpine, and arid climates coexist across dramatic elevation shifts",
+    climateNotes:
+      "Tropical, temperate, alpine, and arid climates coexist across dramatic elevation shifts",
   },
   {
     name: "Europe",
@@ -142,7 +149,8 @@ const continents: SeedRegion[] = [
     lng: 15,
     summary:
       "A patchwork of temperate forests, coastlines, and cultural landscapes where cultivated plants became civilizational symbols.",
-    climateNotes: "Predominantly temperate with Mediterranean warmth in the south and cooler maritime zones in the west",
+    climateNotes:
+      "Predominantly temperate with Mediterranean warmth in the south and cooler maritime zones in the west",
   },
   {
     name: "Asia",
@@ -152,7 +160,8 @@ const continents: SeedRegion[] = [
     lng: 95,
     summary:
       "An immense continent spanning monsoon forests, island archipelagos, and some of the highest mountains on Earth.",
-    climateNotes: "Ranges from humid subtropical coasts to alpine and continental interiors",
+    climateNotes:
+      "Ranges from humid subtropical coasts to alpine and continental interiors",
   },
   {
     name: "Africa",
@@ -162,7 +171,8 @@ const continents: SeedRegion[] = [
     lng: 20,
     summary:
       "A continent of deserts, island endemism, and biodiversity hotspots where climatic extremes shape iconic flora.",
-    climateNotes: "Includes equatorial humidity, Mediterranean winter-rainfall, and hyper-arid coastal deserts",
+    climateNotes:
+      "Includes equatorial humidity, Mediterranean winter-rainfall, and hyper-arid coastal deserts",
   },
   {
     name: "Oceania",
@@ -172,7 +182,8 @@ const continents: SeedRegion[] = [
     lng: 140,
     summary:
       "Island-rich southern landscapes where isolation has produced distinctive forests, shrubs, and fern lineages.",
-    climateNotes: "Ranges from cool maritime forests to warm eucalyptus-dominated woodlands",
+    climateNotes:
+      "Ranges from cool maritime forests to warm eucalyptus-dominated woodlands",
   },
 ];
 
@@ -186,7 +197,8 @@ const regions: SeedRegion[] = [
     lng: -62.2159,
     summary:
       "The Amazon Basin is the largest tropical rainforest on Earth, threaded by vast rivers, oxbow lakes, and floating plant communities.",
-    climateNotes: "Equatorial climate with high humidity, intense rainfall, and year-round warmth",
+    climateNotes:
+      "Equatorial climate with high humidity, intense rainfall, and year-round warmth",
   },
   {
     name: "Andes Highlands",
@@ -197,7 +209,8 @@ const regions: SeedRegion[] = [
     lng: -72.545,
     summary:
       "The high Andes host medicinal trees, giant bromeliads, and plant forms adapted to ultraviolet light, cold nights, and thin air.",
-    climateNotes: "Rapidly shifting temperature by elevation, cool cloud forests below and alpine grasslands above",
+    climateNotes:
+      "Rapidly shifting temperature by elevation, cool cloud forests below and alpine grasslands above",
   },
   {
     name: "Mediterranean Region",
@@ -219,7 +232,8 @@ const regions: SeedRegion[] = [
     lng: 138.2529,
     summary:
       "Japan's archipelago hosts celebrated spring bloomers, maple-rich forests, and a refined seasonal culture of plant observation.",
-    climateNotes: "Varies from humid subtropical south to snowy temperate and subarctic north",
+    climateNotes:
+      "Varies from humid subtropical south to snowy temperate and subarctic north",
   },
   {
     name: "Himalayas",
@@ -230,7 +244,8 @@ const regions: SeedRegion[] = [
     lng: 83.9311,
     summary:
       "The Himalayas combine deep valleys, monsoon moisture, and high-altitude meadows that produce some of the world's most dramatic flowering plants.",
-    climateNotes: "Cold alpine conditions above, monsoon-fed temperate forests below",
+    climateNotes:
+      "Cold alpine conditions above, monsoon-fed temperate forests below",
   },
   {
     name: "Madagascar",
@@ -241,7 +256,8 @@ const regions: SeedRegion[] = [
     lng: 46.8691,
     summary:
       "Madagascar's long isolation created one of the planet's richest concentrations of endemic plants and unusual growth forms.",
-    climateNotes: "From humid eastern forests to strongly seasonal western dry forests",
+    climateNotes:
+      "From humid eastern forests to strongly seasonal western dry forests",
   },
   {
     name: "Cape Floristic Region",
@@ -263,7 +279,8 @@ const regions: SeedRegion[] = [
     lng: 15.8148,
     summary:
       "One of the oldest deserts on Earth, where fog and patience sustain astonishingly ancient plant survivors.",
-    climateNotes: "Hyper-arid, low rainfall, but frequent coastal fog along parts of the desert margin",
+    climateNotes:
+      "Hyper-arid, low rainfall, but frequent coastal fog along parts of the desert margin",
   },
   {
     name: "Australian Southeast Forests",
@@ -274,7 +291,8 @@ const regions: SeedRegion[] = [
     lng: 145.0,
     summary:
       "Tall eucalyptus forests and shrub-rich woodlands define southeastern Australia's botanical character.",
-    climateNotes: "Temperate with moderate rainfall, periodic fire, and cool wet winters in uplands",
+    climateNotes:
+      "Temperate with moderate rainfall, periodic fire, and cool wet winters in uplands",
   },
   {
     name: "New Zealand",
@@ -285,7 +303,8 @@ const regions: SeedRegion[] = [
     lng: 174.886,
     summary:
       "New Zealand's island forests combine fern-dominated understories with flowering trees celebrated in Maori and settler landscapes alike.",
-    climateNotes: "Cool maritime climate, frequent rain, mild summers, and lush evergreen forest growth",
+    climateNotes:
+      "Cool maritime climate, frequent rain, mild summers, and lush evergreen forest growth",
   },
 ];
 
@@ -308,7 +327,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["tropical-rainforest", "wetland"],
     native: true,
     endemic: true,
-    occurrenceNotes: "Thrives in oxbow lakes and calm river edges where wide floating leaves can spread unbroken.",
+    occurrenceNotes:
+      "Thrives in oxbow lakes and calm river edges where wide floating leaves can spread unbroken.",
     facts: [
       "The underside of each leaf is strengthened by a lattice of ribs and spines that discourages herbivorous fish.",
     ],
@@ -334,7 +354,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["tropical-rainforest"],
     native: true,
     endemic: false,
-    occurrenceNotes: "Occurs in humid lowland forest where rainfall remains abundant and temperatures stay warm.",
+    occurrenceNotes:
+      "Occurs in humid lowland forest where rainfall remains abundant and temperatures stay warm.",
     facts: [
       "Before global plantations expanded, the Amazon rubber boom reshaped entire river cities and trade routes.",
     ],
@@ -360,7 +381,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["cloud-forest"],
     native: true,
     endemic: false,
-    occurrenceNotes: "Found on humid Andean slopes where fog and steep terrain shelter medicinal forest species.",
+    occurrenceNotes:
+      "Found on humid Andean slopes where fog and steep terrain shelter medicinal forest species.",
     facts: [
       "Quinine from cinchona bark was one of the first globally significant plant-derived pharmaceuticals.",
     ],
@@ -386,7 +408,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["alpine"],
     native: true,
     endemic: true,
-    occurrenceNotes: "Occurs in open, high-elevation puna landscapes exposed to cold nights and intense sun.",
+    occurrenceNotes:
+      "Occurs in open, high-elevation puna landscapes exposed to cold nights and intense sun.",
     facts: [
       "A single flowering spike may carry thousands of blossoms and can take many decades to appear.",
     ],
@@ -412,7 +435,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["mediterranean"],
     native: true,
     endemic: false,
-    occurrenceNotes: "Thrives on rocky, sunlit slopes and in long-inhabited agricultural landscapes.",
+    occurrenceNotes:
+      "Thrives on rocky, sunlit slopes and in long-inhabited agricultural landscapes.",
     facts: [
       "Some olive groves in the Mediterranean still produce fruit from trees believed to be many centuries old.",
     ],
@@ -438,7 +462,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["mediterranean"],
     native: true,
     endemic: false,
-    occurrenceNotes: "Common on sun-baked slopes and in well-drained soils with long dry summers.",
+    occurrenceNotes:
+      "Common on sun-baked slopes and in well-drained soils with long dry summers.",
     facts: [
       "Lavender oils evolved partly as aromatic defense compounds and became treasured by people for exactly that intensity.",
     ],
@@ -464,7 +489,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["temperate-forest"],
     native: true,
     endemic: false,
-    occurrenceNotes: "Grows in temperate landscapes from parks to forest margins where seasonal change is strongly felt.",
+    occurrenceNotes:
+      "Grows in temperate landscapes from parks to forest margins where seasonal change is strongly felt.",
     facts: [
       "Japan's cherry blossom forecast, or sakura-zensen, is followed each year like a cultural weather map.",
     ],
@@ -490,7 +516,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["temperate-forest"],
     native: true,
     endemic: true,
-    occurrenceNotes: "Occurs in moist temperate woodlands and is widely cultivated in gardens for shape and foliage color.",
+    occurrenceNotes:
+      "Occurs in moist temperate woodlands and is widely cultivated in gardens for shape and foliage color.",
     facts: [
       "Many ornamental cultivars descend from centuries of deliberate Japanese horticultural selection.",
     ],
@@ -516,7 +543,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["alpine"],
     native: true,
     endemic: true,
-    occurrenceNotes: "Found in alpine meadows and moist mountain slopes fed by melting snow and monsoon moisture.",
+    occurrenceNotes:
+      "Found in alpine meadows and moist mountain slopes fed by melting snow and monsoon moisture.",
     facts: [
       "Its saturated blue petals make it one of the most visually distinctive alpine flowers in the world.",
     ],
@@ -542,7 +570,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["temperate-forest", "alpine"],
     native: true,
     endemic: false,
-    occurrenceNotes: "Appears along temperate forest margins and on open hillsides where spring warmth reaches first.",
+    occurrenceNotes:
+      "Appears along temperate forest margins and on open hillsides where spring warmth reaches first.",
     facts: [
       "In some Himalayan regions the flowers are made into brightly colored syrups and drinks.",
     ],
@@ -568,7 +597,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["seasonal-dry-forest"],
     native: true,
     endemic: true,
-    occurrenceNotes: "Occurs in Madagascar's seasonally dry western lowlands where stored water is a survival strategy.",
+    occurrenceNotes:
+      "Occurs in Madagascar's seasonally dry western lowlands where stored water is a survival strategy.",
     facts: [
       "Its trunk can hold extraordinary quantities of water, allowing the tree to outlast prolonged drought.",
     ],
@@ -594,7 +624,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["tropical-rainforest", "wetland"],
     native: true,
     endemic: true,
-    occurrenceNotes: "Occurs in humid and seasonally wet parts of Madagascar, especially where water is abundant.",
+    occurrenceNotes:
+      "Occurs in humid and seasonally wet parts of Madagascar, especially where water is abundant.",
     facts: [
       "Its leaf bases can collect water, inspiring the story that thirsty travelers once used it as a natural reservoir.",
     ],
@@ -620,7 +651,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["fynbos-shrubland"],
     native: true,
     endemic: true,
-    occurrenceNotes: "Thrives in open fynbos where fires periodically reset vegetation and clear space for renewal.",
+    occurrenceNotes:
+      "Thrives in open fynbos where fires periodically reset vegetation and clear space for renewal.",
     facts: [
       "Some proteas resprout after fire while others rely on seed released into newly cleared landscapes.",
     ],
@@ -646,7 +678,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["fynbos-shrubland"],
     native: true,
     endemic: true,
-    occurrenceNotes: "Naturally restricted to Cape Peninsula slopes where wind, fire, and poor soils shape survival.",
+    occurrenceNotes:
+      "Naturally restricted to Cape Peninsula slopes where wind, fire, and poor soils shape survival.",
     facts: [
       "The leaf sheen comes from dense silky hairs that help reflect intense light and reduce moisture loss.",
     ],
@@ -672,7 +705,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["desert-steppe"],
     native: true,
     endemic: true,
-    occurrenceNotes: "Survives in Namibia's arid landscapes where fog and deep roots compensate for sparse rainfall.",
+    occurrenceNotes:
+      "Survives in Namibia's arid landscapes where fog and deep roots compensate for sparse rainfall.",
     facts: [
       "Some individuals are believed to be over a thousand years old while still bearing only two true leaves.",
     ],
@@ -698,7 +732,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["temperate-forest"],
     native: true,
     endemic: true,
-    occurrenceNotes: "Found in cool, moist forests where deep soils and regular rainfall can sustain giant tree growth.",
+    occurrenceNotes:
+      "Found in cool, moist forests where deep soils and regular rainfall can sustain giant tree growth.",
     facts: [
       "It is one of the tallest angiosperms in the world, rivaling many conifers in height.",
     ],
@@ -724,7 +759,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["temperate-forest"],
     native: true,
     endemic: true,
-    occurrenceNotes: "Occurs in open forest and shrubland, often responding vigorously after fire and disturbance.",
+    occurrenceNotes:
+      "Occurs in open forest and shrubland, often responding vigorously after fire and disturbance.",
     facts: [
       "The bold inflorescence is made of many small flowers packed into a single dramatic head.",
     ],
@@ -750,7 +786,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["temperate-forest"],
     native: true,
     endemic: true,
-    occurrenceNotes: "Thrives in humid forest understories where filtered light and moisture remain stable.",
+    occurrenceNotes:
+      "Thrives in humid forest understories where filtered light and moisture remain stable.",
     facts: [
       "As a fern, it reproduces by spores rather than flowers, yet remains as iconic as any blossom-bearing plant.",
     ],
@@ -776,7 +813,8 @@ const floraEntries: SeedFlora[] = [
     biomeSlugs: ["temperate-forest"],
     native: true,
     endemic: false,
-    occurrenceNotes: "Occurs along forest margins, rivers, and open habitats where birds can easily access nectar-rich blooms.",
+    occurrenceNotes:
+      "Occurs along forest margins, rivers, and open habitats where birds can easily access nectar-rich blooms.",
     facts: [
       "Its flowers are especially attractive to tui and bellbirds during the New Zealand spring.",
     ],
@@ -829,7 +867,9 @@ async function main() {
         name: region.name,
         slug: region.slug,
         type: region.type,
-        parentRegionId: region.parentSlug ? regionMap.get(region.parentSlug) : undefined,
+        parentRegionId: region.parentSlug
+          ? regionMap.get(region.parentSlug)
+          : undefined,
         lat: region.lat,
         lng: region.lng,
         summary: region.summary,

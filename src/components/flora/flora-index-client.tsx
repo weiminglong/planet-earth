@@ -30,7 +30,9 @@ export function FloraIndexClient({ flora }: FloraIndexClientProps) {
         .flatMap((item) => item.biomes)
         .filter(
           (current, index, collection) =>
-            collection.findIndex((candidate) => candidate.slug === current.slug) === index,
+            collection.findIndex(
+              (candidate) => candidate.slug === current.slug,
+            ) === index,
         )
         .sort((left, right) => left.name.localeCompare(right.name))
         .map((biomeItem) => ({
@@ -48,7 +50,9 @@ export function FloraIndexClient({ flora }: FloraIndexClientProps) {
         .flatMap((item) => item.continents)
         .filter(
           (current, index, collection) =>
-            collection.findIndex((candidate) => candidate.slug === current.slug) === index,
+            collection.findIndex(
+              (candidate) => candidate.slug === current.slug,
+            ) === index,
         )
         .sort((left, right) => left.name.localeCompare(right.name))
         .map((continentItem) => ({
