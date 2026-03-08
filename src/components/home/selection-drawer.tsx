@@ -80,7 +80,9 @@ function DrawerCard({ flora }: { flora: FloraPreview }) {
         <h2 className="mt-5 font-display text-4xl leading-none text-white">
           {flora.commonName}
         </h2>
-        <p className="mt-2 text-sm italic text-white/70">{flora.scientificName}</p>
+        <p className="mt-2 text-sm italic text-white/70">
+          {flora.scientificName}
+        </p>
         <p className="mt-4 text-sm leading-7 text-white/72">
           {flora.shortDescription}
         </p>
@@ -127,7 +129,9 @@ function DrawerCard({ flora }: { flora: FloraPreview }) {
             <p className="text-xs uppercase tracking-[0.26em] text-white/45">
               Memorable fact
             </p>
-            <p className="mt-3 text-sm leading-7 text-white/72">{flora.facts[0]}</p>
+            <p className="mt-3 text-sm leading-7 text-white/72">
+              {flora.facts[0]}
+            </p>
           </div>
         ) : null}
       </div>

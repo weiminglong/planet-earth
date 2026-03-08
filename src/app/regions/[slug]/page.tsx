@@ -29,7 +29,9 @@ export async function generateMetadata({
   };
 }
 
-export default async function RegionDetailPage({ params }: RegionDetailPageProps) {
+export default async function RegionDetailPage({
+  params,
+}: RegionDetailPageProps) {
   const { slug } = await params;
   const region = await getRegionBySlug(slug);
 
@@ -64,7 +66,10 @@ export default async function RegionDetailPage({ params }: RegionDetailPageProps
               </p>
 
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <MetricCard label="Flora stories" value={String(region.floraCount)} />
+                <MetricCard
+                  label="Flora stories"
+                  value={String(region.floraCount)}
+                />
                 <MetricCard
                   label="Endemic highlights"
                   value={String(region.endemicFloraCount)}
@@ -80,7 +85,8 @@ export default async function RegionDetailPage({ params }: RegionDetailPageProps
                   Climate notes
                 </p>
                 <p className="mt-4 text-sm leading-7 text-white/72">
-                  {region.climateNotes ?? "Climate notes will be expanded as the editorial atlas grows."}
+                  {region.climateNotes ??
+                    "Climate notes will be expanded as the editorial atlas grows."}
                 </p>
               </div>
 
@@ -195,7 +201,9 @@ export default async function RegionDetailPage({ params }: RegionDetailPageProps
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-[1.5rem] border border-white/8 bg-black/22 p-5">
-      <p className="text-xs uppercase tracking-[0.28em] text-white/42">{label}</p>
+      <p className="text-xs uppercase tracking-[0.28em] text-white/42">
+        {label}
+      </p>
       <p className="mt-3 font-display text-3xl text-white">{value}</p>
     </div>
   );

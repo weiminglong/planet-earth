@@ -18,7 +18,8 @@ export function createModernEarthTexture(source: DrawableTextureSource) {
     throw new Error("Unable to create a 2D context for the Earth texture.");
   }
 
-  context.filter = "brightness(0.82) contrast(1.1) saturate(0.86) hue-rotate(4deg)";
+  context.filter =
+    "brightness(0.82) contrast(1.1) saturate(0.86) hue-rotate(4deg)";
   context.drawImage(source, 0, 0, canvas.width, canvas.height);
 
   context.globalCompositeOperation = "multiply";
@@ -66,7 +67,9 @@ export function createAppleMapTexture(
   const context = canvas.getContext("2d");
 
   if (!context) {
-    throw new Error("Unable to create a 2D context for the Apple-style Earth texture.");
+    throw new Error(
+      "Unable to create a 2D context for the Apple-style Earth texture.",
+    );
   }
 
   const sourceCanvas = document.createElement("canvas");
@@ -75,11 +78,18 @@ export function createAppleMapTexture(
   const sourceContext = sourceCanvas.getContext("2d");
 
   if (!sourceContext) {
-    throw new Error("Unable to create an intermediate context for the Apple-style texture.");
+    throw new Error(
+      "Unable to create an intermediate context for the Apple-style texture.",
+    );
   }
 
   sourceContext.drawImage(source, 0, 0, source.width, source.height);
-  const sourcePixels = sourceContext.getImageData(0, 0, source.width, source.height);
+  const sourcePixels = sourceContext.getImageData(
+    0,
+    0,
+    source.width,
+    source.height,
+  );
 
   const reliefPixels = reliefSource
     ? (() => {
@@ -92,8 +102,19 @@ export function createAppleMapTexture(
           return null;
         }
 
-        reliefContext.drawImage(reliefSource, 0, 0, reliefSource.width, reliefSource.height);
-        return reliefContext.getImageData(0, 0, reliefSource.width, reliefSource.height);
+        reliefContext.drawImage(
+          reliefSource,
+          0,
+          0,
+          reliefSource.width,
+          reliefSource.height,
+        );
+        return reliefContext.getImageData(
+          0,
+          0,
+          reliefSource.width,
+          reliefSource.height,
+        );
       })()
     : null;
 
@@ -105,12 +126,14 @@ export function createAppleMapTexture(
     const blue = sourcePixels.data[offset + 2] / 255;
     const luminance = red * 0.2126 + green * 0.7152 + blue * 0.0722;
 
-    const waterLike = blue > green * 0.98 && blue > red * 1.05 && luminance < 0.78;
+    const waterLike =
+      blue > green * 0.98 && blue > red * 1.05 && luminance < 0.78;
     const polarLike =
       luminance > 0.82 &&
       Math.abs(red - green) < 0.06 &&
       Math.abs(green - blue) < 0.06;
-    const desertLike = red > green * 1.04 && green > blue * 1.02 && luminance > 0.45;
+    const desertLike =
+      red > green * 1.04 && green > blue * 1.02 && luminance > 0.45;
     const vegetationLike = green > red * 0.98 && green > blue * 1.08;
 
     let color: RgbColor;
@@ -119,13 +142,29 @@ export function createAppleMapTexture(
       const depth = clamp((0.76 - luminance) / 0.52, 0, 1);
       color = mixRgb([185, 211, 232], [123, 166, 205], depth);
     } else if (polarLike) {
-      color = mixRgb([244, 247, 250], [229, 236, 243], clamp((luminance - 0.82) / 0.18, 0, 1));
+      color = mixRgb(
+        [244, 247, 250],
+        [229, 236, 243],
+        clamp((luminance - 0.82) / 0.18, 0, 1),
+      );
     } else if (desertLike) {
-      color = mixRgb([227, 217, 202], [208, 194, 175], clamp((red - blue) * 1.5, 0, 1));
+      color = mixRgb(
+        [227, 217, 202],
+        [208, 194, 175],
+        clamp((red - blue) * 1.5, 0, 1),
+      );
     } else if (vegetationLike) {
-      color = mixRgb([210, 219, 205], [192, 207, 190], clamp((green - blue) * 1.2, 0, 1));
+      color = mixRgb(
+        [210, 219, 205],
+        [192, 207, 190],
+        clamp((green - blue) * 1.2, 0, 1),
+      );
     } else {
-      color = mixRgb([227, 230, 222], [209, 214, 208], clamp((0.6 - luminance) * 1.4, 0, 1));
+      color = mixRgb(
+        [227, 230, 222],
+        [209, 214, 208],
+        clamp((0.6 - luminance) * 1.4, 0, 1),
+      );
     }
 
     if (!waterLike && reliefPixels) {
@@ -133,12 +172,15 @@ export function createAppleMapTexture(
       const reliefGreen = reliefPixels.data[offset + 1];
       const reliefBlue = reliefPixels.data[offset + 2];
       const reliefStrength = clamp(
-        (Math.abs(reliefRed - 128) + Math.abs(reliefGreen - 128) + Math.abs(reliefBlue - 255)) /
+        (Math.abs(reliefRed - 128) +
+          Math.abs(reliefGreen - 128) +
+          Math.abs(reliefBlue - 255)) /
           170,
         0,
         1,
       );
-      const highlight = reliefGreen > 128 ? reliefStrength * 0.06 : -reliefStrength * 0.08;
+      const highlight =
+        reliefGreen > 128 ? reliefStrength * 0.06 : -reliefStrength * 0.08;
       color = applyLightness(color, highlight);
     }
 
@@ -160,7 +202,12 @@ export function createAppleMapTexture(
   context.fillStyle = oceanGlow;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  const glassShade = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+  const glassShade = context.createLinearGradient(
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+  );
   glassShade.addColorStop(0, "rgba(255,255,255,0.1)");
   glassShade.addColorStop(0.45, "rgba(255,255,255,0)");
   glassShade.addColorStop(1, "rgba(14, 26, 43, 0.14)");

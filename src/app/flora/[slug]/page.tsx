@@ -29,7 +29,9 @@ export async function generateMetadata({
   };
 }
 
-export default async function FloraDetailPage({ params }: FloraDetailPageProps) {
+export default async function FloraDetailPage({
+  params,
+}: FloraDetailPageProps) {
   const { slug } = await params;
   const flora = await getFloraBySlug(slug);
 
@@ -161,7 +163,10 @@ export default async function FloraDetailPage({ params }: FloraDetailPageProps) 
               Distinctive facts
             </p>
             <div className="mt-5 space-y-4">
-              {(flora.facts.length ? flora.facts : [flora.shortDescription]).map((fact) => (
+              {(flora.facts.length
+                ? flora.facts
+                : [flora.shortDescription]
+              ).map((fact) => (
                 <div
                   key={fact}
                   className="rounded-[1.5rem] border border-white/8 bg-black/20 p-4 text-sm leading-7 text-white/72"
@@ -177,16 +182,17 @@ export default async function FloraDetailPage({ params }: FloraDetailPageProps) 
               Cultural context
             </p>
             <div className="mt-5 space-y-4">
-              {(flora.culturalNotes.length ? flora.culturalNotes : [flora.longDescription]).map(
-                (note) => (
-                  <div
-                    key={note}
-                    className="rounded-[1.5rem] border border-white/8 bg-black/20 p-4 text-sm leading-7 text-white/72"
-                  >
-                    {note}
-                  </div>
-                ),
-              )}
+              {(flora.culturalNotes.length
+                ? flora.culturalNotes
+                : [flora.longDescription]
+              ).map((note) => (
+                <div
+                  key={note}
+                  className="rounded-[1.5rem] border border-white/8 bg-black/20 p-4 text-sm leading-7 text-white/72"
+                >
+                  {note}
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -261,7 +267,9 @@ export default async function FloraDetailPage({ params }: FloraDetailPageProps) 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-[1.5rem] border border-white/8 bg-black/22 p-5">
-      <p className="text-xs uppercase tracking-[0.28em] text-white/42">{label}</p>
+      <p className="text-xs uppercase tracking-[0.28em] text-white/42">
+        {label}
+      </p>
       <p className="mt-3 font-display text-3xl text-white">{value}</p>
     </div>
   );

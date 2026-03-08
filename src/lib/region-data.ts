@@ -1,5 +1,9 @@
 import { cache } from "react";
 import type { Prisma } from "@/generated/prisma/client";
+import {
+  buildRegionWhere,
+  type RegionQueryFilters,
+} from "@/lib/region-query-filters";
 import { prisma } from "@/lib/prisma";
 
 export type RegionFloraCard = {
@@ -65,7 +69,8 @@ type RegionRecord = Prisma.RegionGetPayload<{
 
 function dedupeBySlug<T extends { slug: string }>(items: T[]) {
   return items.filter(
-    (item, index) => items.findIndex((candidate) => candidate.slug === item.slug) === index,
+    (item, index) =>
+      items.findIndex((candidate) => candidate.slug === item.slug) === index,
   );
 }
 
@@ -134,16 +139,15 @@ async function fetchRegionRecords(where?: Prisma.RegionWhereInput) {
 }
 
 export const getAllRegions = cache(async () => {
-  const records = await fetchRegionRecords({
-    type: {
-      not: "continent",
-    },
-  });
+  const records = await fetchRegionRecords(buildRegionWhere());
 
-  return records
-    .map(mapRegionRecord)
-    .filter((region) => region.floraCount > 0);
+  return records.map(mapRegionRecord);
 });
+
+export async function getFilteredRegions(filters: RegionQueryFilters = {}) {
+  const records = await fetchRegionRecords(buildRegionWhere(filters));
+  return records.map(mapRegionRecord);
+}
 
 export const getHomepageRegions = cache(async () => {
   const regions = await getAllRegions();

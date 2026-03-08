@@ -4,7 +4,8 @@ import { getAllRegions } from "@/lib/region-data";
 
 export const metadata = {
   title: "Regions",
-  description: "Browse the regions and habitats featured in Living Flora Globe.",
+  description:
+    "Browse the regions and habitats featured in Living Flora Globe.",
 };
 
 export default async function RegionsPage() {
